@@ -20,11 +20,11 @@
  * SOFTWARE.
  */
 #include <iostream>
-#include <REvent/base.h>
-#include <REvent/event.h>
+#include <event/base.h>
+#include <event/event.h>
 
 using namespace std;
-using namespace REvent;
+using namespace event;
 
 class SignalHandle: public Handle {
     ErrorCode todo(Event *event) const {

@@ -19,9 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <REvent/base.h>
+#include <event/base.h>
 
-using namespace REvent;
+using namespace event;
 
 Base::Base()
 {

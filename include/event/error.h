@@ -21,20 +21,14 @@
  */
 #pragma once
 
-#include <REvent/error.h>
+namespace event {
 
-namespace REvent {
-
-class Event;
-
-class Base {
-public:
-    Base();
-    ~Base();
-    ErrorCode add(Event *event);
-    ErrorCode del(Event *event);
-    ErrorCode mod(Event *event);
-    ErrorCode dispatch();
+enum ErrorCode {
+    RE_ERR_OK,
+    RE_ERR_ERR,
+    RE_ERR_MEM,
+    RE_ERR_BUSY,
+    RE_ERR_FILE,
 };
 
 }

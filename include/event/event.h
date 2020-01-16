@@ -19,28 +19,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <REvent/event.h>
+#pragma once
 
-using namespace REvent;
+#include <event/error.h>
 
-Event::Event(Type type, Handle *handle)
-{
-    this->type = type;
-    this->handle = handle;
-}
+namespace event {
 
-Event::~Event()
-{
+class Handle;
 
-}
+class Event {
+public:
+    enum Type {
+        EV_TYPE_TIMEOUT,
+        EV_TYPE_READ,
+        EV_TYPE_WRITE,
+        EV_TYPE_SIGNAL,
+        EV_TYPE_MAX,
+    };
 
-Event::Type Event::getType() const
-{
-    return type;
-}
+    Event(Type type, Handle *handle);
+    ~Event();
 
-ErrorCode Event::setType(Type type)
-{
-    this->type = type;
-    return RE_ERR_OK;
+    Type getType() const;
+    ErrorCode setType(Type type);
+private:
+    Type type;
+    Handle *handle;
+};
+
+class Handle {
+public:
+    virtual ErrorCode todo(Event *event) const = 0;
+    virtual ErrorCode error(Event *event) const = 0;
+    virtual ErrorCode timeout(Event *event) const = 0;
+};
+
 }

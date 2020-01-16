@@ -19,9 +19,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# Makefile of REvent
+# Makefile of event
 #
-PROJECT_NAME := revent
+PROJECT_NAME := event
 
 QUIET ?= @
 
@@ -97,9 +97,9 @@ INCLUDES := \
 	$(NULL)
 
 #
-# Source file of librevent
+# Source file of libevent
 #
-SOURCES_LIBREVENT := \
+SOURCES_LIBEVENT := \
 	$(wildcard src/$(PROJECT_NAME)/*.cpp)\
 	$(NULL)
 
@@ -137,14 +137,14 @@ example: $(addprefix $(BIN_DIR)/, $(EXAMPLE_TARGET))
 # Rule to build dynamic library
 #
 $(eval $(call BUILD_TARGET_RULES, $(LIB_DYNAMIC), METHOD_LD,\
-	$(SOURCES_LIBREVENT),\
+	$(SOURCES_LIBEVENT),\
 	-shared))
 
 #
 # Rule to build static library
 #
 $(eval $(call BUILD_TARGET_RULES, $(LIB_STATIC), METHOD_AR,\
-	$(SOURCES_LIBREVENT)))
+	$(SOURCES_LIBEVENT)))
 
 #
 # Rule to build helloworld
