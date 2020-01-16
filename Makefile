@@ -39,8 +39,8 @@ LIB_DIR = $(BUILD_DIR)/lib
 #
 # Toolchain
 #
-CPP := $(CROSS_COMPILE)g++
-LD := $(CROSS_COMPILE)ld
+CXX ?= $(CROSS_COMPILE)g++
+AR ?= $(CROSS_COMPILE)ar
 
 #
 # Link a target
@@ -51,7 +51,7 @@ LD := $(CROSS_COMPILE)ld
 #
 define METHOD_LD
 	echo 'LINK $(notdir $1)';\
-	    $(CPP) -o $1 $(2:%.cpp=$(BUILD_DIR)/%.o) $3 $(LDFLAGS)
+	    $(CXX) -o $1 $(2:%.cpp=$(BUILD_DIR)/%.o) $3 $(LDFLAGS)
 
 -include $(2:%.cpp=$(BUILD_DIR)/%.d)
 endef
@@ -157,7 +157,7 @@ $(eval $(call BUILD_TARGET_RULES, $(BIN_DIR)/helloworld, METHOD_LD,\
 #
 $(BUILD_DIR)/%.o: %.cpp
 	$(QUIET)echo 'CPP $<';\
-	    mkdir -p $(dir $@); $(CPP) $(CPPFLAGS) -c -o $@ $<
+	    mkdir -p $(dir $@); $(CXX) $(CPPFLAGS) -c -o $@ $<
 
 #
 # Rule to make dependencies files
