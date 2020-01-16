@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2020 KNpTrue
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -20,11 +20,33 @@
  * SOFTWARE.
  */
 #include <iostream>
+#include <event/base.h>
+#include <event/event.h>
 
 using namespace std;
+using namespace event;
+
+class SignalHandle: public Handle {
+    ErrorCode todo(Event *event) const {
+        cout << "signal()" << endl;
+        return RE_ERR_ERR;
+    }
+
+    ErrorCode error(Event *event) const {
+        return RE_ERR_ERR;
+    }
+
+    ErrorCode timeout(Event *event) const {
+        return RE_ERR_ERR;
+    }
+};
 
 int main(int argc, char *argv[])
 {
-    cout << "Hello world" << endl;
+    Base base;
+    SignalHandle handle;
+    Event signalEvent(Event::EV_TYPE_SIGNAL, &handle);
+    base.add(&signalEvent);
+    base.dispatch();
     return 0;
 }

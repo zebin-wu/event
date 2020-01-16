@@ -25,33 +25,16 @@
 
 namespace event {
 
-class Handle;
+class Event;
 
-class Event {
+class Base {
 public:
-    enum Type {
-        EV_TYPE_TIMEOUT,
-        EV_TYPE_READ,
-        EV_TYPE_WRITE,
-        EV_TYPE_SIGNAL,
-        EV_TYPE_MAX,
-    };
-
-    Event(Type type, Handle *handle);
-    ~Event();
-
-    Type getType() const;
-    ErrorCode setType(Type type);
-private:
-    Type type;
-    Handle *handle;
-};
-
-class Handle {
-public:
-    virtual ErrorCode todo(Event *event) const = 0;
-    virtual ErrorCode error(Event *event) const = 0;
-    virtual ErrorCode timeout(Event *event) const = 0;
+    Base();
+    ~Base();
+    ErrorCode add(Event *event);
+    ErrorCode del(Event *event);
+    ErrorCode mod(Event *event);
+    ErrorCode dispatch();
 };
 
 }

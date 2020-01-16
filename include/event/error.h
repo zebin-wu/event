@@ -21,37 +21,14 @@
  */
 #pragma once
 
-#include <event/error.h>
-
 namespace event {
 
-class Handle;
-
-class Event {
-public:
-    enum Type {
-        EV_TYPE_TIMEOUT,
-        EV_TYPE_READ,
-        EV_TYPE_WRITE,
-        EV_TYPE_SIGNAL,
-        EV_TYPE_MAX,
-    };
-
-    Event(Type type, Handle *handle);
-    ~Event();
-
-    Type getType() const;
-    ErrorCode setType(Type type);
-private:
-    Type type;
-    Handle *handle;
-};
-
-class Handle {
-public:
-    virtual ErrorCode todo(Event *event) const = 0;
-    virtual ErrorCode error(Event *event) const = 0;
-    virtual ErrorCode timeout(Event *event) const = 0;
+enum ErrorCode {
+    RE_ERR_OK,
+    RE_ERR_ERR,
+    RE_ERR_MEM,
+    RE_ERR_BUSY,
+    RE_ERR_FILE,
 };
 
 }

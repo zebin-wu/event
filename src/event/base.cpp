@@ -19,39 +19,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#pragma once
+#include <event/base.h>
 
-#include <event/error.h>
+using namespace event;
 
-namespace event {
+Base::Base()
+{
+}
 
-class Handle;
+Base::~Base()
+{
+}
 
-class Event {
-public:
-    enum Type {
-        EV_TYPE_TIMEOUT,
-        EV_TYPE_READ,
-        EV_TYPE_WRITE,
-        EV_TYPE_SIGNAL,
-        EV_TYPE_MAX,
-    };
+ErrorCode Base::add(Event *event)
+{
+    return RE_ERR_OK;
+}
 
-    Event(Type type, Handle *handle);
-    ~Event();
+ErrorCode Base::del(Event *event)
+{
+    return RE_ERR_OK;
+}
 
-    Type getType() const;
-    ErrorCode setType(Type type);
-private:
-    Type type;
-    Handle *handle;
-};
+ErrorCode Base::mod(Event *event)
+{
+    return RE_ERR_OK;
+}
 
-class Handle {
-public:
-    virtual ErrorCode todo(Event *event) const = 0;
-    virtual ErrorCode error(Event *event) const = 0;
-    virtual ErrorCode timeout(Event *event) const = 0;
-};
-
+ErrorCode Base::dispatch()
+{
+    return RE_ERR_OK;
 }
