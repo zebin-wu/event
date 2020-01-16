@@ -19,34 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <iostream>
-#include <REvent/base.h>
-#include <REvent/event.h>
+#pragma once
 
-using namespace std;
-using namespace REvent;
+namespace REvent {
 
-class SignalHandle: public Handle {
-    ErrorCode todo(Event *event) const {
-        cout << "signal()" << endl;
-        return RE_ERR_ERR;
-    }
-
-    ErrorCode error(Event *event) const {
-        return RE_ERR_ERR;
-    }
-
-    ErrorCode timeout(Event *event) const {
-        return RE_ERR_ERR;
-    }
+enum ErrorCode {
+    RE_ERR_OK,
+    RE_ERR_ERR,
+    RE_ERR_MEM,
+    RE_ERR_BUSY,
 };
 
-int main(int argc, char *argv[])
-{
-    Base base;
-    SignalHandle handle;
-    Event signalEvent(Event::EV_TYPE_SIGNAL, &handle);
-    base.add(&signalEvent);
-    base.dispatch();
-    return 0;
 }

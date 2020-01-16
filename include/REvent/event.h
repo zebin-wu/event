@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2020 KNpTrue
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -19,12 +19,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <event/event.h>
+#pragma once
 
-Event::Event()
-{
-}
+#include <REvent/error.h>
 
-Event::~Event()
-{
+namespace REvent {
+
+class Handle;
+
+class Event {
+public:
+    enum Type {
+        EV_TYPE_TIMEOUT,
+        EV_TYPE_READ,
+        EV_TYPE_WRITE,
+        EV_TYPE_SIGNAL,
+        EV_TYPE_MAX,
+    };
+
+    Event(Type type, Handle *handle);
+    ~Event();
+
+    Type getType() const;
+    ErrorCode setType(Type type);
+private:
+    Type type;
+    Handle *handle;
+};
+
+class Handle {
+public:
+    virtual ErrorCode todo(Event *event) const = 0;
+    virtual ErrorCode error(Event *event) const = 0;
+    virtual ErrorCode timeout(Event *event) const = 0;
+};
+
 }

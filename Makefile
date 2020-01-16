@@ -1,6 +1,6 @@
 #
 # Copyright (c) 2020 KNpTrue
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -18,10 +18,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# 
-# Makefile of Event
 #
-PROJECT_NAME := event
+# Makefile of REvent
+#
+PROJECT_NAME := revent
 
 QUIET ?= @
 
@@ -97,10 +97,10 @@ INCLUDES := \
 	$(NULL)
 
 #
-# Source file of libevent
+# Source file of librevent
 #
-SOURCES_LIBEVENT := \
-	$(wildcard src/event/*.cpp)\
+SOURCES_LIBREVENT := \
+	$(wildcard src/$(PROJECT_NAME)/*.cpp)\
 	$(NULL)
 
 #
@@ -108,7 +108,7 @@ SOURCES_LIBEVENT := \
 #
 CPPFLAGS += \
 	$(addprefix -I, $(INCLUDES))\
-	-ffunction-sections -fdata-sections
+	-fPIC -ffunction-sections -fdata-sections
 
 #
 # Compile command line switch of LD
@@ -134,17 +134,17 @@ EXAMPLE_TARGET = \
 example: $(addprefix $(BIN_DIR)/, $(EXAMPLE_TARGET))
 
 #
-# Rule to build $(LIB_NAME).so
+# Rule to build dynamic library
 #
 $(eval $(call BUILD_TARGET_RULES, $(LIB_DYNAMIC), METHOD_LD,\
-	$(SOURCES_LIBEVENT),\
+	$(SOURCES_LIBREVENT),\
 	-shared))
 
 #
-# Rule to build $(LIB_NAME).a
+# Rule to build static library
 #
 $(eval $(call BUILD_TARGET_RULES, $(LIB_STATIC), METHOD_AR,\
-	$(SOURCES_LIBEVENT)))
+	$(SOURCES_LIBREVENT)))
 
 #
 # Rule to build helloworld
