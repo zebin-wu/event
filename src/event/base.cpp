@@ -33,20 +33,20 @@ Base::~Base()
 
 ErrorCode Base::add(Event *event)
 {
-    return RE_ERR_OK;
+    return EV_ERR_OK;
 }
 
 ErrorCode Base::del(Event *event)
 {
-    return RE_ERR_OK;
+    return EV_ERR_OK;
 }
 
 ErrorCode Base::mod(Event *event)
 {
-    return RE_ERR_OK;
+    return EV_ERR_OK;
 }
 
 ErrorCode Base::dispatch()
 {
-    return RE_ERR_OK;
+    return EV_ERR_OK;
 }

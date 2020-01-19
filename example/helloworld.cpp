@@ -26,27 +26,21 @@
 using namespace std;
 using namespace event;
 
-class SignalHandle: public Handle {
-    ErrorCode todo(Event *event) const {
-        cout << "signal()" << endl;
-        return RE_ERR_ERR;
-    }
-
-    ErrorCode error(Event *event) const {
-        return RE_ERR_ERR;
-    }
-
-    ErrorCode timeout(Event *event) const {
-        return RE_ERR_ERR;
+class MyTimerCb: public TimerCb {
+public:
+    ErrorCode timeout(TimerEvent *evt) const {
+        cout << __func__ << "()" << endl;
+        return EV_ERR_ERR;
     }
 };
 
 int main(int argc, char *argv[])
 {
     Base base;
-    SignalHandle handle;
-    Event signalEvent(Event::EV_TYPE_SIGNAL, &handle);
-    base.add(&signalEvent);
+    MyTimerCb timerCb;
+    TimerEvent timerEvent(&timerCb, 1000);
+    base.add(&timerEvent);
     base.dispatch();
+
     return 0;
 }

@@ -21,14 +21,22 @@
  */
 #pragma once
 
+/**
+ * @file error.h
+ * @brief Event error number
+ */
+
 namespace event {
 
+/**
+ * @enum error number
+ */
 enum ErrorCode {
-    RE_ERR_OK,
-    RE_ERR_ERR,
-    RE_ERR_MEM,
-    RE_ERR_BUSY,
-    RE_ERR_FILE,
+    EV_ERR_OK,          ///< no error
+    EV_ERR_ERR,         ///< non-specific error
+    EV_ERR_MEM,         ///< memory error
+    EV_ERR_IN_PROGRESS, ///< successfully started, but not finished
+    EV_ERR_BUSY,        ///< another operation is in progress
 };
 
-}
+} // namespace event

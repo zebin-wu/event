@@ -23,6 +23,11 @@
 
 #include <event/error.h>
 
+/**
+ * @file base.h
+ * @brief Event base class
+ */
+
 namespace event {
 
 class Event;
@@ -37,4 +42,4 @@ public:
     ErrorCode dispatch();
 };
 
-}
+} // namespace event

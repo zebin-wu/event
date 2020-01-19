@@ -156,7 +156,7 @@ $(eval $(call BUILD_TARGET_RULES, $(BIN_DIR)/helloworld, METHOD_LD,\
 # Rule to compile source code
 #
 $(BUILD_DIR)/%.o: %.cpp
-	$(QUIET)echo 'CPP $<';\
+	$(QUIET)echo 'CXX $<';\
 	    mkdir -p $(dir $@); $(CXX) $(CPPFLAGS) -c -o $@ $<
 
 #
@@ -168,8 +168,8 @@ $(BUILD_DIR)/%.d: %.cpp Makefile
 		sed 's,.*\.o[ :]*,$(@:%.d=%.o) $@: ,g' > $@) || rm -f $@
 
 #
-# Clean staging directory.
+# Clean build directory.
 #
 .PHONY: clean
 clean:
-	$(QUIET)echo 'Clean staging directory'; rm -rf $(BUILD_DIR)
+	$(QUIET)echo 'Clean build directory'; rm -rf $(BUILD_DIR)

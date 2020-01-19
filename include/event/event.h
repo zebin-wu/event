@@ -23,35 +23,106 @@
 
 #include <event/error.h>
 
+/**
+ * @file event.h
+ * @brief Event class
+ */
+
 namespace event {
 
-class Handle;
+class Callback;
+class SignalCb;
+class TimerCb;
+class HandleCb;
 
 class Event {
 public:
     enum Type {
-        EV_TYPE_TIMEOUT,
-        EV_TYPE_READ,
-        EV_TYPE_WRITE,
-        EV_TYPE_SIGNAL,
-        EV_TYPE_MAX,
+        EV_HANDLE,  ///< Socket or FD event
+        EV_TIMER,   ///< Timer event
+        EV_SIGNAL,  ///< POSIX signal event
     };
 
-    Event(Type type, Handle *handle);
+    Event(Type type, Callback *cb);
     ~Event();
 
     Type getType() const;
     ErrorCode setType(Type type);
+    Callback *getCb() const;
+    ErrorCode setCb(Callback *cb);
 private:
     Type type;
-    Handle *handle;
+    Callback *cb;
 };
 
-class Handle {
+class SignalEvent: public Event {
 public:
-    virtual ErrorCode todo(Event *event) const = 0;
-    virtual ErrorCode error(Event *event) const = 0;
-    virtual ErrorCode timeout(Event *event) const = 0;
+    enum Signal {
+        SIGNAL_INT,
+    };
+    SignalEvent(SignalCb *cb, Signal signal);
+    ~SignalEvent();
+
+    Signal getSignal() const;
+    ErrorCode setSignal(Signal signal);
+private:
+    Signal signal;
 };
 
-}
+class TimerEvent: public Event {
+public:
+    typedef unsigned long time_t;
+    TimerEvent(TimerCb *cb, time_t timeout);
+    ~TimerEvent();
+
+    time_t getTimeout() const;
+    ErrorCode setTimeout(time_t timeout);
+private:
+    time_t timeout;
+};
+
+class HandleEvent: public Event {
+public:
+    enum Operation{
+        OP_READ,
+        OP_WRITE,
+        OP_ERROR,
+    };
+    HandleEvent(HandleCb *cb, int handle, Operation op);
+    ~HandleEvent();
+
+    int getHandle() const;
+    ErrorCode setHandle(int handle);
+    Operation getOperation() const;
+    ErrorCode setOperation(Operation op);
+private:
+    int handle;
+    Operation op;
+};
+
+class Callback {
+public:
+    virtual ErrorCode call(Event *evt) const = 0;
+};
+
+class SignalCb {
+public:
+    virtual ErrorCode signal(SignalEvent *evt) const = 0;
+    ErrorCode call(Event *evt) const;
+};
+
+class TimerCb {
+public:
+    virtual ErrorCode timeout(TimerEvent *evt) const = 0;
+    ErrorCode call(Event *evt) const;
+};
+
+class HandleCb {
+public:
+    virtual ErrorCode read(HandleEvent *evt) const = 0;
+    virtual ErrorCode write(HandleEvent *evt) const = 0;
+    virtual ErrorCode error(HandleEvent *evt) const = 0;
+    ErrorCode call(Event *evt) const;
+};
+
+} // namespace event
