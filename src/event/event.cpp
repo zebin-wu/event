@@ -19,8 +19,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <event/event.h>
-#include <assert.h>
+#include <event/event.hpp>
+#include <common/assert.hpp>
 
 using namespace event;
 
@@ -127,20 +127,20 @@ ErrorCode HandleEvent::setOperation(Operation op)
 
 ErrorCode SignalCb::call(Event *evt) const
 {
-    assert(evt->getType() == Event::EV_SIGNAL);
+    ASSERT(evt->getType() == Event::EV_SIGNAL);
     return signal((SignalEvent *)evt);
 }
 
 ErrorCode TimerCb::call(Event *evt) const
 {
-    assert(evt->getType() == Event::EV_TIMER);
+    ASSERT(evt->getType() == Event::EV_TIMER);
     return timeout((TimerEvent *)evt);
 }
 
 ErrorCode HandleCb::call(Event *evt) const
 {
     HandleEvent *handleEvt = (HandleEvent *)evt;
-    assert(evt->getType() == Event::EV_HANDLE);
+    ASSERT(evt->getType() == Event::EV_HANDLE);
 
     switch (handleEvt->getOperation()) {
     case HandleEvent::OP_READ:
@@ -150,7 +150,7 @@ ErrorCode HandleCb::call(Event *evt) const
     case HandleEvent::OP_ERROR:
         return this->error(handleEvt);
     default:
-        assert(true);
+        ASSERT(true);
         break;
     }
     return EV_ERR_ERR;

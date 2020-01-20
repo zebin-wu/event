@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <event/base.h>
+#include <event/base.hpp>
 
 using namespace event;
 
@@ -48,5 +48,8 @@ ErrorCode Base::mod(Event *event)
 
 ErrorCode Base::dispatch()
 {
+    while(loop) {
+
+    }
     return EV_ERR_OK;
 }

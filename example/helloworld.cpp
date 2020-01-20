@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 #include <iostream>
-#include <event/base.h>
-#include <event/event.h>
+#include <event/base.hpp>
+#include <event/event.hpp>
 
 using namespace std;
 using namespace event;

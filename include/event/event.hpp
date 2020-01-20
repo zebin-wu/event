@@ -21,10 +21,10 @@
  */
 #pragma once
 
-#include <event/error.h>
+#include <event/error.hpp>
 
 /**
- * @file event.h
+ * @file event.hpp
  * @brief Event class
  */
 
@@ -105,19 +105,19 @@ public:
     virtual ErrorCode call(Event *evt) const = 0;
 };
 
-class SignalCb {
+class SignalCb: public Callback {
 public:
     virtual ErrorCode signal(SignalEvent *evt) const = 0;
     ErrorCode call(Event *evt) const;
 };
 
-class TimerCb {
+class TimerCb: public Callback {
 public:
     virtual ErrorCode timeout(TimerEvent *evt) const = 0;
     ErrorCode call(Event *evt) const;
 };
 
-class HandleCb {
+class HandleCb: public Callback {
 public:
     virtual ErrorCode read(HandleEvent *evt) const = 0;
     virtual ErrorCode write(HandleEvent *evt) const = 0;
