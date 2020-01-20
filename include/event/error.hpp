@@ -22,7 +22,7 @@
 #pragma once
 
 /**
- * @file error.h
+ * @file error.hpp
  * @brief Event error number
  */
 

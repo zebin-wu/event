@@ -25,6 +25,7 @@ PROJECT_NAME := event
 
 QUIET ?= @
 
+PLATFORM ?= linux
 ARCH ?= native
 VERSION ?= 0.9
 
@@ -94,6 +95,9 @@ LIB_STATIC = $(LIB_DIR)/$(LIB_NAME).a
 #
 INCLUDES := \
 	include\
+	common/include\
+	common/src/include\
+	common/src/platform/$(PLATFORM)/include\
 	$(NULL)
 
 #
@@ -101,6 +105,8 @@ INCLUDES := \
 #
 SOURCES_LIBEVENT := \
 	$(wildcard src/$(PROJECT_NAME)/*.cpp)\
+	$(wildcard common/src/common/*.cpp)\
+	$(wildcard common/src/platform/$(PLATFORM)/*.cpp)\
 	$(NULL)
 
 #
@@ -164,7 +170,7 @@ $(BUILD_DIR)/%.o: %.cpp
 #
 $(BUILD_DIR)/%.d: %.cpp Makefile
 	$(QUIET)echo "DEP $<";\
-		(mkdir -p $(dir $@); $(CPP) -MM $(CPPFLAGS) $< | \
+		(mkdir -p $(dir $@); $(CXX) -MM $(CPPFLAGS) $< | \
 		sed 's,.*\.o[ :]*,$(@:%.d=%.o) $@: ,g' > $@) || rm -f $@
 
 #

@@ -21,10 +21,10 @@
  */
 #pragma once
 
-#include <event/error.h>
+#include <event/error.hpp>
 
 /**
- * @file base.h
+ * @file base.hpp
  * @brief Event base class
  */
 
@@ -40,6 +40,8 @@ public:
     ErrorCode del(Event *event);
     ErrorCode mod(Event *event);
     ErrorCode dispatch();
+private:
+    bool loop;
 };
 
 } // namespace event
