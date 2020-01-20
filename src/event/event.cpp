@@ -40,7 +40,7 @@ Event::Type Event::getType() const
 ErrorCode Event::setType(Type type)
 {
     this->type = type;
-    return EV_ERR_OK;
+    return ERR_OK;
 }
 
 Callback *Event::getCb() const
@@ -51,7 +51,7 @@ Callback *Event::getCb() const
 ErrorCode Event::setCb(Callback *cb)
 {
     this->cb = cb;
-    return EV_ERR_OK;
+    return ERR_OK;
 }
 
 SignalEvent::SignalEvent(SignalCb *cb, Signal signal):
@@ -71,7 +71,7 @@ SignalEvent::Signal SignalEvent::getSignal() const
 ErrorCode SignalEvent::setSignal(Signal signal)
 {
     this->signal = signal;
-    return EV_ERR_OK;
+    return ERR_OK;
 }
 
 TimerEvent::TimerEvent(TimerCb *cb, time_t timeout):
@@ -91,7 +91,7 @@ TimerEvent::time_t TimerEvent::getTimeout() const
 ErrorCode TimerEvent::setTimeout(time_t timeout)
 {
     this->timeout = timeout;
-    return EV_ERR_OK;
+    return ERR_OK;
 }
 
 HandleEvent::HandleEvent(HandleCb *cb, int handle, Operation op):
@@ -111,7 +111,7 @@ int HandleEvent::getHandle() const
 ErrorCode HandleEvent::setHandle(int handle)
 {
     this->handle = handle;
-    return EV_ERR_OK;
+    return ERR_OK;
 }
 
 HandleEvent::Operation HandleEvent::getOperation() const
@@ -122,7 +122,7 @@ HandleEvent::Operation HandleEvent::getOperation() const
 ErrorCode HandleEvent::setOperation(Operation op)
 {
     this->op = op;
-    return EV_ERR_OK;
+    return ERR_OK;
 }
 
 ErrorCode SignalCb::call(Event *evt) const
@@ -153,5 +153,5 @@ ErrorCode HandleCb::call(Event *evt) const
         ASSERT(true);
         break;
     }
-    return EV_ERR_ERR;
+    return ERR_ERR;
 }

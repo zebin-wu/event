@@ -30,7 +30,7 @@ class MyTimerCb: public TimerCb {
 public:
     ErrorCode timeout(TimerEvent *evt) const {
         cout << __func__ << "()" << endl;
-        return EV_ERR_ERR;
+        return ERR_ERR;
     }
 };
 

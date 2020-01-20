@@ -21,12 +21,14 @@
  */
 #pragma once
 
-#include <event/error.hpp>
+#include <common/error.hpp>
 
 /**
  * @file base.hpp
  * @brief Event base class
  */
+
+using namespace common;
 
 namespace event {
 
