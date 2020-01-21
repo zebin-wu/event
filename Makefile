@@ -93,7 +93,7 @@ LIB_STATIC = $(LIB_DIR)/$(LIB_NAME).a
 #
 # Header files include directory
 #
-INCLUDES := \
+INCLUDES += \
 	include\
 	common/include\
 	common/src/include\
@@ -157,6 +157,12 @@ $(eval $(call BUILD_TARGET_RULES, $(LIB_STATIC), METHOD_AR,\
 #
 $(eval $(call BUILD_TARGET_RULES, $(BIN_DIR)/helloworld, METHOD_LD,\
 	example/helloworld.cpp, $(EXAMPLE_LDFLAGS), all))
+
+#
+# Rult to check code style
+#
+CSTYLE_INCLUDES = $(filter-out include, $(foreach dir, $(INCLUDES), $(shell find $(dir) -maxdepth 1 -type d)))
+CSTYLE_HEADERS = $(foreach dir, $(CSTYLE_INCLUDES), $(wildcard $(dir)/*.hpp))
 
 #
 # Rule to compile source code
