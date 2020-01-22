@@ -28,22 +28,22 @@
  * @brief Event base class
  */
 
-using namespace common;
+using common::ErrorCode;
 
 namespace event {
 
 class Event;
 
 class Base {
-public:
+ public:
     Base();
     ~Base();
     ErrorCode add(Event *event);
     ErrorCode del(Event *event);
     ErrorCode mod(Event *event);
     ErrorCode dispatch();
-private:
+ private:
     bool loop;
 };
 
-} // namespace event
+}  // namespace event

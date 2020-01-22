@@ -20,36 +20,31 @@
  * SOFTWARE.
  */
 #include <event/base.hpp>
+#include <common/error.hpp>
 
-using namespace event;
+namespace event {
 
-Base::Base()
-{
+Base::Base() {}
+
+Base::~Base() {}
+
+ErrorCode Base::add(Event *event) {
+    return common::ERR_OK;
 }
 
-Base::~Base()
-{
+ErrorCode Base::del(Event *event) {
+    return common::ERR_OK;
 }
 
-ErrorCode Base::add(Event *event)
-{
-    return ERR_OK;
+ErrorCode Base::mod(Event *event) {
+    return common::ERR_OK;
 }
 
-ErrorCode Base::del(Event *event)
-{
-    return ERR_OK;
-}
-
-ErrorCode Base::mod(Event *event)
-{
-    return ERR_OK;
-}
-
-ErrorCode Base::dispatch()
-{
-    while(loop) {
-
+ErrorCode Base::dispatch() {
+    while (loop) {
+        {}
     }
-    return ERR_OK;
+    return common::ERR_OK;
 }
+
+}  // namespace event

@@ -22,23 +22,20 @@
 #include <iostream>
 #include <event/base.hpp>
 #include <event/event.hpp>
+#include <common/error.hpp>
 
-using namespace std;
-using namespace event;
-
-class MyTimerCb: public TimerCb {
-public:
-    ErrorCode timeout(TimerEvent *evt) const {
-        cout << __func__ << "()" << endl;
-        return ERR_ERR;
+class MyTimerCb: public event::TimerCb {
+ public:
+    ErrorCode timeout(event::TimerEvent *evt) const {
+        std::cout << __func__ << "()" << std::endl;
+        return common::ERR_ERR;
     }
 };
 
-int main(int argc, char *argv[])
-{
-    Base base;
+int main(int argc, char *argv[]) {
+    event::Base base;
     MyTimerCb timerCb;
-    TimerEvent timerEvent(&timerCb, 1000);
+    event::TimerEvent timerEvent(&timerCb, 1000);
     base.add(&timerEvent);
     base.dispatch();
 

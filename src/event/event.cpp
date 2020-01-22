@@ -22,124 +22,95 @@
 #include <event/event.hpp>
 #include <common/assert.hpp>
 
-using namespace event;
+namespace event {
 
-Event::Event(Type type, Callback *cb): type(type), cb(cb)
-{
+Event::Event(Type type, Callback *cb): type(type), cb(cb) {
 }
 
-Event::~Event()
-{
-}
+Event::~Event() {}
 
-Event::Type Event::getType() const
-{
+Event::Type Event::getType() const {
     return type;
 }
 
-ErrorCode Event::setType(Type type)
-{
+ErrorCode Event::setType(Type type) {
     this->type = type;
-    return ERR_OK;
+    return common::ERR_OK;
 }
 
-Callback *Event::getCb() const
-{
+Callback *Event::getCb() const {
     return this->cb;
 }
 
-ErrorCode Event::setCb(Callback *cb)
-{
+ErrorCode Event::setCb(Callback *cb) {
     this->cb = cb;
-    return ERR_OK;
+    return common::ERR_OK;
 }
 
 SignalEvent::SignalEvent(SignalCb *cb, Signal signal):
-    Event(Event::EV_SIGNAL, (Callback *)cb), signal(signal)
-{
-}
+    Event(Event::EV_SIGNAL, static_cast<Callback *>(cb)), signal(signal) {}
 
-SignalEvent::~SignalEvent()
-{
-}
+SignalEvent::~SignalEvent() {}
 
-SignalEvent::Signal SignalEvent::getSignal() const
-{
+SignalEvent::Signal SignalEvent::getSignal() const {
     return this->signal;
 }
 
-ErrorCode SignalEvent::setSignal(Signal signal)
-{
+ErrorCode SignalEvent::setSignal(Signal signal) {
     this->signal = signal;
-    return ERR_OK;
+    return common::ERR_OK;
 }
 
 TimerEvent::TimerEvent(TimerCb *cb, time_t timeout):
-    Event(Event::EV_TIMER, (Callback *)cb), timeout(timeout)
-{
-}
+    Event(Event::EV_TIMER, static_cast<Callback *>(cb)), timeout(timeout) {}
 
-TimerEvent::~TimerEvent()
-{
-}
+TimerEvent::~TimerEvent() {}
 
-TimerEvent::time_t TimerEvent::getTimeout() const
-{
+time_t TimerEvent::getTimeout() const {
     return this->timeout;
 }
 
-ErrorCode TimerEvent::setTimeout(time_t timeout)
-{
+ErrorCode TimerEvent::setTimeout(time_t timeout) {
     this->timeout = timeout;
-    return ERR_OK;
+    return common::ERR_OK;
 }
 
 HandleEvent::HandleEvent(HandleCb *cb, int handle, Operation op):
-    Event(Event::EV_HANDLE, (Callback *)cb), handle(handle), op(op)
-{
-}
+    Event(Event::EV_HANDLE, static_cast<Callback *>(cb)),
+    handle(handle), op(op) {}
 
-HandleEvent::~HandleEvent()
-{
-}
+HandleEvent::~HandleEvent() {}
 
-int HandleEvent::getHandle() const
-{
+int HandleEvent::getHandle() const {
     return this->handle;
 }
 
-ErrorCode HandleEvent::setHandle(int handle)
-{
+ErrorCode HandleEvent::setHandle(int handle) {
     this->handle = handle;
-    return ERR_OK;
+    return common::ERR_OK;
 }
 
-HandleEvent::Operation HandleEvent::getOperation() const
-{
+HandleEvent::Operation HandleEvent::getOperation() const {
     return this->op;
 }
 
-ErrorCode HandleEvent::setOperation(Operation op)
-{
+ErrorCode HandleEvent::setOperation(Operation op) {
     this->op = op;
-    return ERR_OK;
+    return common::ERR_OK;
 }
 
-ErrorCode SignalCb::call(Event *evt) const
-{
+ErrorCode SignalCb::call(Event *evt) const {
     ASSERT(evt->getType() == Event::EV_SIGNAL);
-    return signal((SignalEvent *)evt);
+    return signal(static_cast<SignalEvent *>(evt));
 }
 
-ErrorCode TimerCb::call(Event *evt) const
-{
+ErrorCode TimerCb::call(Event *evt) const {
     ASSERT(evt->getType() == Event::EV_TIMER);
-    return timeout((TimerEvent *)evt);
+    return timeout(static_cast<TimerEvent *>(evt));
 }
 
-ErrorCode HandleCb::call(Event *evt) const
-{
-    HandleEvent *handleEvt = (HandleEvent *)evt;
+ErrorCode HandleCb::call(Event *evt) const {
+    HandleEvent *handleEvt = static_cast<HandleEvent *>(evt);
     ASSERT(evt->getType() == Event::EV_HANDLE);
 
     switch (handleEvt->getOperation()) {
@@ -153,5 +124,7 @@ ErrorCode HandleCb::call(Event *evt) const
         ASSERT(true);
         break;
     }
-    return ERR_ERR;
+    return common::ERR_ERR;
 }
+
+}  // namespace event
