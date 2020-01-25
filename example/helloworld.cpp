@@ -23,6 +23,7 @@
 #include <event/base.hpp>
 #include <event/event.hpp>
 #include <common/error.hpp>
+#include <common/log.hpp>
 
 class MyTimerCb: public event::TimerCb {
  public:
@@ -38,6 +39,9 @@ int main(int argc, char *argv[]) {
     event::TimerEvent timerEvent(&timerCb, 1000);
     base.add(&timerEvent);
     base.dispatch();
+
+    common::Log::setLevel(common::Log::LOG_INFO);
+    log_info("hello world.");
 
     return 0;
 }

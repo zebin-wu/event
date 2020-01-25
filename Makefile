@@ -136,4 +136,4 @@ $(eval $(call BUILD_TARGET_RULES, $(LIBEVENT_STATIC), METHOD_AR,\
 # Rule to build helloworld
 #
 $(eval $(call BUILD_TARGET_RULES, $(BIN_DIR)/helloworld, METHOD_LD,\
-	example/helloworld.cpp, $(EXAMPLE_LDFLAGS), all))
+	example/helloworld.cpp, $(EXAMPLE_LDFLAGS)))
