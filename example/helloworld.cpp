@@ -22,24 +22,41 @@
 #include <iostream>
 #include <event/base.hpp>
 #include <event/event.hpp>
+#include <common/error.hpp>
+#include <common/log.hpp>
 
-using namespace std;
-using namespace event;
+static event::Base base;
 
-class MyTimerCb: public TimerCb {
-public:
-    ErrorCode timeout(TimerEvent *evt) const {
-        cout << __func__ << "()" << endl;
-        return EV_ERR_ERR;
-    }
+class MyTimerCb: public event::TimerCb {
+ public:
+    ErrorCode timeout(event::TimerEvent *evt) const;
 };
 
-int main(int argc, char *argv[])
-{
-    Base base;
+class MyTimerEvent: public event::TimerEvent {
+ public:
+    explicit MyTimerEvent(MyTimerCb *cb): count(0),
+        TimerEvent(dynamic_cast<event::TimerCb *>(cb)) {}
+
+    u32 count;
+};
+
+ErrorCode MyTimerCb::timeout(event::TimerEvent *evt) const {
+    MyTimerEvent *myEvt = static_cast<MyTimerEvent *>(evt);
+
+    log_info("%s(): count: %u", __func__, myEvt->count++);
+    evt->setTimeout(1000);
+    base.addEvent(evt);
+    return common::ERR_ERR;
+}
+
+int main(int argc, char *argv[]) {
     MyTimerCb timerCb;
-    TimerEvent timerEvent(&timerCb, 1000);
-    base.add(&timerEvent);
+    MyTimerEvent timerEvent(&timerCb);
+    timerEvent.setTimeout(1000);
+    base.addEvent(&timerEvent);
+
+    common::Log::setLevel(common::Log::LOG_INFO);
+
     base.dispatch();
 
     return 0;

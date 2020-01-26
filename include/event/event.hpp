@@ -21,108 +21,111 @@
  */
 #pragma once
 
-#include <event/error.hpp>
+#include <common/error.hpp>
+#include <platform/type.hpp>
 
 /**
  * @file event.hpp
  * @brief Event class
  */
 
+using common::ErrorCode;
+
 namespace event {
 
+class EventPriv;
 class Callback;
 class SignalCb;
 class TimerCb;
 class HandleCb;
 
 class Event {
-public:
+ public:
     enum Type {
         EV_HANDLE,  ///< Socket or FD event
         EV_TIMER,   ///< Timer event
         EV_SIGNAL,  ///< POSIX signal event
     };
 
-    Event(Type type, Callback *cb);
+    explicit Event(Type type, Callback *cb);
     ~Event();
 
     Type getType() const;
-    ErrorCode setType(Type type);
     Callback *getCb() const;
     ErrorCode setCb(Callback *cb);
-private:
-    Type type;
-    Callback *cb;
+    bool isPending() const;
+    void setPending(bool pending);
+ private:
+    EventPriv *priv;
 };
 
 class SignalEvent: public Event {
-public:
+ public:
     enum Signal {
         SIGNAL_INT,
     };
-    SignalEvent(SignalCb *cb, Signal signal);
+    explicit SignalEvent(SignalCb *cb, Signal signal);
     ~SignalEvent();
 
     Signal getSignal() const;
     ErrorCode setSignal(Signal signal);
-private:
+ private:
     Signal signal;
 };
 
 class TimerEvent: public Event {
-public:
-    typedef unsigned long time_t;
-    TimerEvent(TimerCb *cb, time_t timeout);
+ public:
+    explicit TimerEvent(TimerCb *cb);
     ~TimerEvent();
 
-    time_t getTimeout() const;
-    ErrorCode setTimeout(time_t timeout);
-private:
-    time_t timeout;
+    ErrorCode setTimeout(u32 ms);
+    u64 getTimeMs() const;
+ private:
+    u64 timeMs;
 };
 
 class HandleEvent: public Event {
-public:
+ public:
     enum Operation{
         OP_READ,
         OP_WRITE,
         OP_ERROR,
     };
-    HandleEvent(HandleCb *cb, int handle, Operation op);
+    explicit HandleEvent(HandleCb *cb, int handle, Operation op);
     ~HandleEvent();
 
     int getHandle() const;
     ErrorCode setHandle(int handle);
     Operation getOperation() const;
     ErrorCode setOperation(Operation op);
-private:
+ private:
     int handle;
     Operation op;
 };
 
 class Callback {
-public:
+ public:
     virtual ErrorCode call(Event *evt) const = 0;
 };
 
 class SignalCb: public Callback {
-public:
+ public:
     virtual ErrorCode signal(SignalEvent *evt) const = 0;
     ErrorCode call(Event *evt) const;
 };
 
 class TimerCb: public Callback {
-public:
+ public:
     virtual ErrorCode timeout(TimerEvent *evt) const = 0;
     ErrorCode call(Event *evt) const;
 };
 
 class HandleCb: public Callback {
-public:
+ public:
     virtual ErrorCode read(HandleEvent *evt) const = 0;
     virtual ErrorCode write(HandleEvent *evt) const = 0;
     virtual ErrorCode error(HandleEvent *evt) const = 0;
     ErrorCode call(Event *evt) const;
 };
 
-} // namespace event
+}  // namespace event
