@@ -33,6 +33,7 @@ using common::ErrorCode;
 
 namespace event {
 
+class EventPriv;
 class Callback;
 class SignalCb;
 class TimerCb;
@@ -46,16 +47,16 @@ class Event {
         EV_SIGNAL,  ///< POSIX signal event
     };
 
-    Event(Type type, Callback *cb);
+    explicit Event(Type type, Callback *cb);
     ~Event();
 
     Type getType() const;
-    ErrorCode setType(Type type);
     Callback *getCb() const;
     ErrorCode setCb(Callback *cb);
+    bool isPending() const;
+    void setPending(bool pending);
  private:
-    Type type;
-    Callback *cb;
+    EventPriv *priv;
 };
 
 class SignalEvent: public Event {
@@ -63,7 +64,7 @@ class SignalEvent: public Event {
     enum Signal {
         SIGNAL_INT,
     };
-    SignalEvent(SignalCb *cb, Signal signal);
+    explicit SignalEvent(SignalCb *cb, Signal signal);
     ~SignalEvent();
 
     Signal getSignal() const;
@@ -74,13 +75,13 @@ class SignalEvent: public Event {
 
 class TimerEvent: public Event {
  public:
-    TimerEvent(TimerCb *cb, time_t timeout);
+    explicit TimerEvent(TimerCb *cb);
     ~TimerEvent();
 
-    time_t getTimeout() const;
-    ErrorCode setTimeout(time_t timeout);
+    ErrorCode setTimeout(u32 ms);
+    u64 getTimeMs() const;
  private:
-    time_t timeout;
+    u64 timeMs;
 };
 
 class HandleEvent: public Event {
@@ -90,7 +91,7 @@ class HandleEvent: public Event {
         OP_WRITE,
         OP_ERROR,
     };
-    HandleEvent(HandleCb *cb, int handle, Operation op);
+    explicit HandleEvent(HandleCb *cb, int handle, Operation op);
     ~HandleEvent();
 
     int getHandle() const;

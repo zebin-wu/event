@@ -33,17 +33,17 @@ using common::ErrorCode;
 namespace event {
 
 class Event;
+class BasePriv;
 
 class Base {
  public:
     Base();
     ~Base();
-    ErrorCode add(Event *event);
-    ErrorCode del(Event *event);
-    ErrorCode mod(Event *event);
+    ErrorCode addEvent(Event *evt);
+    ErrorCode delEvent(Event *evt);
     ErrorCode dispatch();
  private:
-    bool loop;
+    BasePriv *priv;
 };
 
 }  // namespace event

@@ -21,30 +21,53 @@
  */
 #include <event/event.hpp>
 #include <common/assert.hpp>
+#include <platform/lock.hpp>
+#include <platform/clock.hpp>
+
+#define TIMER_DELAY_MAX 0x7fffffffU
 
 namespace event {
 
-Event::Event(Type type, Callback *cb): type(type), cb(cb) {
-}
+class EventPriv {
+ public:
+    EventPriv(Event::Type type, Callback *cb):
+        type(type), cb(cb), pending(false) {}
+
+    Event::Type type;
+    Callback *cb;
+    bool pending;
+    platform::Lock mutex;
+};
+
+Event::Event(Type type, Callback *cb): priv(new EventPriv(type, cb)) {}
 
 Event::~Event() {}
 
 Event::Type Event::getType() const {
-    return type;
-}
-
-ErrorCode Event::setType(Type type) {
-    this->type = type;
-    return common::ERR_OK;
+    return priv->type;
 }
 
 Callback *Event::getCb() const {
-    return this->cb;
+    return priv->cb;
 }
 
 ErrorCode Event::setCb(Callback *cb) {
-    this->cb = cb;
+    ASSERT(cb);
+    if (isPending()) {
+        return common::ERR_BUSY;
+    }
+    priv->cb = cb;
     return common::ERR_OK;
+}
+
+bool Event::isPending() const {
+    return priv->pending;
+}
+
+void Event::setPending(bool pending) {
+    priv->mutex.lock();
+    priv->pending = pending;
+    priv->mutex.unlock();
 }
 
 SignalEvent::SignalEvent(SignalCb *cb, Signal signal):
@@ -61,18 +84,28 @@ ErrorCode SignalEvent::setSignal(Signal signal) {
     return common::ERR_OK;
 }
 
-TimerEvent::TimerEvent(TimerCb *cb, time_t timeout):
-    Event(Event::EV_TIMER, static_cast<Callback *>(cb)), timeout(timeout) {}
+TimerEvent::TimerEvent(TimerCb *cb):
+    Event(Event::EV_TIMER, static_cast<Callback *>(cb)), timeMs(0) {}
 
 TimerEvent::~TimerEvent() {}
 
-time_t TimerEvent::getTimeout() const {
-    return this->timeout;
+ErrorCode TimerEvent::setTimeout(u32 ms) {
+    if (this->isPending()) {
+        return common::ERR_BUSY;
+    }
+    if (ms > TIMER_DELAY_MAX) {
+        ms = TIMER_DELAY_MAX;
+    }
+    timeMs = platform::Clock::Instance().getTotalMs() + ms;
+    if (!timeMs) {
+        timeMs--;
+    }
+
+    return common::ERR_OK;
 }
 
-ErrorCode TimerEvent::setTimeout(time_t timeout) {
-    this->timeout = timeout;
-    return common::ERR_OK;
+u64 TimerEvent::getTimeMs() const {
+    return timeMs;
 }
 
 HandleEvent::HandleEvent(HandleCb *cb, int handle, Operation op):
