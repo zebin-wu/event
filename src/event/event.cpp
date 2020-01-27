@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #include <event/event.hpp>
 #include <common/assert.hpp>
 #include <platform/lock.hpp>
@@ -115,7 +115,7 @@ HandleEvent::HandleEvent(HandleCb *cb, int handle, Operation op):
 HandleEvent::~HandleEvent() {}
 
 int HandleEvent::getHandle() const {
-    return this->handle;
+    return handle;
 }
 
 ErrorCode HandleEvent::setHandle(int handle) {
@@ -148,11 +148,11 @@ ErrorCode HandleCb::call(Event *evt) const {
 
     switch (handleEvt->getOperation()) {
     case HandleEvent::OP_READ:
-        return this->read(handleEvt);
+        return read(handleEvt);
     case HandleEvent::OP_WRITE:
-        return this->write(handleEvt);
+        return write(handleEvt);
     case HandleEvent::OP_ERROR:
-        return this->error(handleEvt);
+        return error(handleEvt);
     default:
         ASSERT(true);
         break;

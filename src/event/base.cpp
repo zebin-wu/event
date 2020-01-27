@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #include <event/base.hpp>
 #include <event/event.hpp>
 #include <common/error.hpp>
@@ -31,14 +31,23 @@ namespace event {
 
 class TimerBase {
  public:
-    TimerBase(): timerHead(NULL) {}
+    TimerBase(): timerHead(nullptr) {}
+
+    ~TimerBase() {
+        TimerNode *cur;
+        while (timerHead) {
+            cur = timerHead;
+            timerHead = cur->next;
+            delete cur;
+        }
+    }
 
     ErrorCode addEvent(TimerEvent *evt) {
         u64 timeMs;
         TimerNode **t = &timerHead;
         timeMs = evt->getTimeMs();
         mutex.lock();
-        while (*t != NULL) {
+        while (*t) {
             if (TIME_AFTER((*t)->evt->getTimeMs(), timeMs)) {
                 break;
             }
@@ -53,7 +62,7 @@ class TimerBase {
         TimerNode **t = &timerHead, *cur;
 
         mutex.lock();
-        while (*t != NULL) {
+        while (*t) {
             cur = *t;
             if (cur->evt == evt) {
                 *t = cur->next;
@@ -67,12 +76,12 @@ class TimerBase {
 
     u32 timerAdvance() {
         TimerEvent *curEvt;
-        TimerNode **t = &timerHead, *cur;
+        TimerNode *cur;
         u64 curMs, tmpMs;
 
-        while (*t != NULL) {
+        while (timerHead) {
             mutex.lock();
-            cur = *t;
+            cur = timerHead;
             curEvt = cur->evt;
             mutex.unlock();
             tmpMs = curEvt->getTimeMs();
@@ -81,7 +90,7 @@ class TimerBase {
                 return tmpMs - curMs;
             }
             mutex.lock();
-            *t = cur->next;
+            timerHead = cur->next;
             mutex.unlock();
             delete cur;
             curEvt->setPending(false);
@@ -93,7 +102,7 @@ class TimerBase {
  private:
     class TimerNode {
      public:
-        explicit TimerNode(TimerEvent *evt, TimerNode *next = NULL):
+        explicit TimerNode(TimerEvent *evt, TimerNode *next = nullptr):
             evt(evt), next(next) {}
 
         TimerEvent *evt;

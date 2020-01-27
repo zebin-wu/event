@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #include <iostream>
 #include <event/base.hpp>
 #include <event/event.hpp>
@@ -50,14 +50,16 @@ ErrorCode MyTimerCb::timeout(event::TimerEvent *evt) const {
 }
 
 int main(int argc, char *argv[]) {
+    common::ErrorCode err;
     MyTimerCb timerCb;
     MyTimerEvent timerEvent(&timerCb);
+
     timerEvent.setTimeout(1000);
     base.addEvent(&timerEvent);
 
     common::Log::setLevel(common::Log::LOG_INFO);
 
-    base.dispatch();
+    err = base.dispatch();
 
     return 0;
 }
