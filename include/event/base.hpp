@@ -18,17 +18,15 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #pragma once
 
-#include <common/error.hpp>
+#include <common/exception.hpp>
 
 /**
  * @file base.hpp
  * @brief Event base class
- */
-
-using common::ErrorCode;
+*/
 
 namespace event {
 
@@ -39,11 +37,22 @@ class Base {
  public:
     Base();
     ~Base();
-    ErrorCode addEvent(Event *evt);
-    ErrorCode delEvent(Event *evt);
-    ErrorCode dispatch();
+    void addEvent(Event *evt);
+    void delEvent(Event *evt);
+    void dispatch();
  private:
     BasePriv *priv;
+};
+
+class BaseException: public common::Exception {
+ public:
+    explicit BaseException(Base *base, common::ErrorCode err):
+        Exception(err), base(base) {}
+    explicit BaseException(Base *base,
+        common::ErrorCode err, const char *message):
+        Exception(err, message), base(base) {}
+ private:
+    Base *base;
 };
 
 }  // namespace event

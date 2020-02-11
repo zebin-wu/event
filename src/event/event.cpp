@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #include <event/event.hpp>
 #include <common/assert.hpp>
 #include <platform/lock.hpp>
@@ -51,13 +51,13 @@ Callback *Event::getCb() const {
     return priv->cb;
 }
 
-ErrorCode Event::setCb(Callback *cb) {
+void Event::setCb(Callback *cb) {
     ASSERT(cb);
     if (isPending()) {
-        return common::ERR_BUSY;
+        throw EventException(this, common::ERR_PERM,
+            "the event has been added, cannot set callback");
     }
     priv->cb = cb;
-    return common::ERR_OK;
 }
 
 bool Event::isPending() const {
@@ -79,9 +79,8 @@ SignalEvent::Signal SignalEvent::getSignal() const {
     return this->signal;
 }
 
-ErrorCode SignalEvent::setSignal(Signal signal) {
+void SignalEvent::setSignal(Signal signal) {
     this->signal = signal;
-    return common::ERR_OK;
 }
 
 TimerEvent::TimerEvent(TimerCb *cb):
@@ -89,9 +88,10 @@ TimerEvent::TimerEvent(TimerCb *cb):
 
 TimerEvent::~TimerEvent() {}
 
-ErrorCode TimerEvent::setTimeout(u32 ms) {
+void TimerEvent::setTimeout(u32 ms) {
     if (this->isPending()) {
-        return common::ERR_BUSY;
+        throw EventException(this, common::ERR_PERM,
+            "the event has been added, cannot set timeout");
     }
     if (ms > TIMER_DELAY_MAX) {
         ms = TIMER_DELAY_MAX;
@@ -100,8 +100,6 @@ ErrorCode TimerEvent::setTimeout(u32 ms) {
     if (!timeMs) {
         timeMs--;
     }
-
-    return common::ERR_OK;
 }
 
 u64 TimerEvent::getTimeMs() const {
@@ -115,49 +113,49 @@ HandleEvent::HandleEvent(HandleCb *cb, int handle, Operation op):
 HandleEvent::~HandleEvent() {}
 
 int HandleEvent::getHandle() const {
-    return this->handle;
+    return handle;
 }
 
-ErrorCode HandleEvent::setHandle(int handle) {
+void HandleEvent::setHandle(int handle) {
     this->handle = handle;
-    return common::ERR_OK;
 }
 
 HandleEvent::Operation HandleEvent::getOperation() const {
     return this->op;
 }
 
-ErrorCode HandleEvent::setOperation(Operation op) {
+void HandleEvent::setOperation(Operation op) {
     this->op = op;
-    return common::ERR_OK;
 }
 
-ErrorCode SignalCb::call(Event *evt) const {
+void SignalCb::call(Event *evt) const {
     ASSERT(evt->getType() == Event::EV_SIGNAL);
-    return signal(static_cast<SignalEvent *>(evt));
+    signal(static_cast<SignalEvent *>(evt));
 }
 
-ErrorCode TimerCb::call(Event *evt) const {
+void TimerCb::call(Event *evt) const {
     ASSERT(evt->getType() == Event::EV_TIMER);
-    return timeout(static_cast<TimerEvent *>(evt));
+    timeout(static_cast<TimerEvent *>(evt));
 }
 
-ErrorCode HandleCb::call(Event *evt) const {
+void HandleCb::call(Event *evt) const {
     HandleEvent *handleEvt = static_cast<HandleEvent *>(evt);
     ASSERT(evt->getType() == Event::EV_HANDLE);
 
     switch (handleEvt->getOperation()) {
     case HandleEvent::OP_READ:
-        return this->read(handleEvt);
+        read(handleEvt);
+        break;
     case HandleEvent::OP_WRITE:
-        return this->write(handleEvt);
+        write(handleEvt);
+        break;
     case HandleEvent::OP_ERROR:
-        return this->error(handleEvt);
+        error(handleEvt);
+        break;
     default:
-        ASSERT(true);
+        ASSERT_NOTREACHED();
         break;
     }
-    return common::ERR_ERR;
 }
 
 }  // namespace event

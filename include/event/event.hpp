@@ -18,18 +18,16 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #pragma once
 
-#include <common/error.hpp>
+#include <common/exception.hpp>
 #include <platform/type.hpp>
 
 /**
  * @file event.hpp
  * @brief Event class
- */
-
-using common::ErrorCode;
+*/
 
 namespace event {
 
@@ -52,11 +50,22 @@ class Event {
 
     Type getType() const;
     Callback *getCb() const;
-    ErrorCode setCb(Callback *cb);
+    void setCb(Callback *cb);
     bool isPending() const;
     void setPending(bool pending);
  private:
     EventPriv *priv;
+};
+
+class EventException: public common::Exception {
+ public:
+    explicit EventException(Event *evt, common::ErrorCode err):
+        Exception(err), evt(evt) {}
+    explicit EventException(Event *evt,
+        common::ErrorCode err, const char *message):
+        Exception(err, message), evt(evt) {}
+ private:
+    Event *evt;
 };
 
 class SignalEvent: public Event {
@@ -68,7 +77,7 @@ class SignalEvent: public Event {
     ~SignalEvent();
 
     Signal getSignal() const;
-    ErrorCode setSignal(Signal signal);
+    void setSignal(Signal signal);
  private:
     Signal signal;
 };
@@ -78,7 +87,7 @@ class TimerEvent: public Event {
     explicit TimerEvent(TimerCb *cb);
     ~TimerEvent();
 
-    ErrorCode setTimeout(u32 ms);
+    void setTimeout(u32 ms);
     u64 getTimeMs() const;
  private:
     u64 timeMs;
@@ -95,9 +104,9 @@ class HandleEvent: public Event {
     ~HandleEvent();
 
     int getHandle() const;
-    ErrorCode setHandle(int handle);
+    void setHandle(int handle);
     Operation getOperation() const;
-    ErrorCode setOperation(Operation op);
+    void setOperation(Operation op);
  private:
     int handle;
     Operation op;
@@ -105,27 +114,27 @@ class HandleEvent: public Event {
 
 class Callback {
  public:
-    virtual ErrorCode call(Event *evt) const = 0;
+    virtual void call(Event *evt) const = 0;
 };
 
 class SignalCb: public Callback {
  public:
-    virtual ErrorCode signal(SignalEvent *evt) const = 0;
-    ErrorCode call(Event *evt) const;
+    virtual void signal(SignalEvent *evt) const = 0;
+    void call(Event *evt) const;
 };
 
 class TimerCb: public Callback {
  public:
-    virtual ErrorCode timeout(TimerEvent *evt) const = 0;
-    ErrorCode call(Event *evt) const;
+    virtual void timeout(TimerEvent *evt) const = 0;
+    void call(Event *evt) const;
 };
 
 class HandleCb: public Callback {
  public:
-    virtual ErrorCode read(HandleEvent *evt) const = 0;
-    virtual ErrorCode write(HandleEvent *evt) const = 0;
-    virtual ErrorCode error(HandleEvent *evt) const = 0;
-    ErrorCode call(Event *evt) const;
+    virtual void read(HandleEvent *evt) const = 0;
+    virtual void write(HandleEvent *evt) const = 0;
+    virtual void error(HandleEvent *evt) const = 0;
+    void call(Event *evt) const;
 };
 
 }  // namespace event
