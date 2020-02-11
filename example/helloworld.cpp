@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#include <iostream>
+#include <common/exception.hpp>
 #include <event/base.hpp>
 #include <event/event.hpp>
 #include <common/error.hpp>
@@ -29,7 +29,7 @@ static event::Base base;
 
 class MyTimerCb: public event::TimerCb {
  public:
-    ErrorCode timeout(event::TimerEvent *evt) const;
+    void timeout(event::TimerEvent *evt) const;
 };
 
 class MyTimerEvent: public event::TimerEvent {
@@ -40,26 +40,28 @@ class MyTimerEvent: public event::TimerEvent {
     u32 count;
 };
 
-ErrorCode MyTimerCb::timeout(event::TimerEvent *evt) const {
+void MyTimerCb::timeout(event::TimerEvent *evt) const {
     MyTimerEvent *myEvt = static_cast<MyTimerEvent *>(evt);
 
     log_info("%s(): count: %u", __func__, myEvt->count++);
     evt->setTimeout(1000);
     base.addEvent(evt);
-    return common::ERR_ERR;
 }
 
 int main(int argc, char *argv[]) {
-    common::ErrorCode err;
-    MyTimerCb timerCb;
-    MyTimerEvent timerEvent(&timerCb);
+    try {
+        MyTimerCb timerCb;
+        MyTimerEvent timerEvent(&timerCb);
 
-    timerEvent.setTimeout(1000);
-    base.addEvent(&timerEvent);
+        timerEvent.setTimeout(1000);
+        base.addEvent(&timerEvent);
 
-    common::Log::setLevel(common::Log::LOG_INFO);
+        common::Log::setLevel(common::Log::LOG_INFO);
 
-    err = base.dispatch();
+        base.dispatch();
+    } catch (common::Exception e) {
+        log_err("Error: %s, Message: %s", e.what(), e.message());
+    }
 
     return 0;
 }

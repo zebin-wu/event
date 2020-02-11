@@ -21,7 +21,6 @@
 */
 #include <event/base.hpp>
 #include <event/event.hpp>
-#include <common/error.hpp>
 #include <common/assert.hpp>
 #include <common/log.hpp>
 #include <platform/lock.hpp>
@@ -42,7 +41,7 @@ class TimerBase {
         }
     }
 
-    ErrorCode addEvent(TimerEvent *evt) {
+    void addEvent(TimerEvent *evt) {
         u64 timeMs;
         TimerNode **t = &timerHead;
         timeMs = evt->getTimeMs();
@@ -55,10 +54,9 @@ class TimerBase {
         }
         *t = new TimerNode(evt, *t);
         mutex.unlock();
-        return common::ERR_OK;
     }
 
-    ErrorCode delEvent(TimerEvent *evt) {
+    void delEvent(TimerEvent *evt) {
         TimerNode **t = &timerHead, *cur;
 
         mutex.lock();
@@ -66,12 +64,13 @@ class TimerBase {
             cur = *t;
             if (cur->evt == evt) {
                 *t = cur->next;
+                mutex.unlock();
                 delete cur;
-                return common::ERR_OK;
+                return;
             }
         }
         mutex.unlock();
-        return common::ERR_INVAL_ARG;
+        throw EventException(evt, common::ERR_PERM, "the event was not found");
     }
 
     u32 timerAdvance() {
@@ -125,53 +124,46 @@ Base::~Base() {
     delete priv;
 }
 
-ErrorCode Base::addEvent(Event *evt) {
-    ErrorCode err = common::ERR_OK;
-
+void Base::addEvent(Event *evt) {
     ASSERT(evt);
     if (evt->isPending()) {
-        return common::ERR_BUSY;
+        throw EventException(evt, common::ERR_BUSY, "the event has been added");
     }
     switch (evt->getType()) {
     case Event::EV_TIMER:
         priv->timerBase.addEvent(static_cast<TimerEvent *>(evt));
         break;
     default:
-        err = common::ERR_INVAL_ARG;
-        goto end;
+        ASSERT_NOTREACHED();
     }
     evt->setPending(true);
-end:
-    return err;
 }
 
-ErrorCode Base::delEvent(Event *evt) {
-    ErrorCode err = common::ERR_OK;
-
+void Base::delEvent(Event *evt) {
     ASSERT(evt);
     if (!evt->isPending()) {
-        return common::ERR_IDLE;
+        throw EventException(evt, common::ERR_BUSY, "the event is not added");
     }
     switch (evt->getType()) {
     case Event::EV_TIMER:
         priv->timerBase.delEvent(static_cast<TimerEvent *>(evt));
     default:
-        err = common::ERR_INVAL_ARG;
-        goto end;
+        ASSERT_NOTREACHED();
     }
     evt->setPending(false);
-end:
-    return err;
 }
 
-ErrorCode Base::dispatch() {
-    priv->loop = true;
+void Base::dispatch() {
     u32 ms;
+
+    if (priv->loop) {
+        throw BaseException(this, common::ERR_BUSY, "the base is in loop");
+    }
+    priv->loop = true;
 
     while (priv->loop) {
         ms = priv->timerBase.timerAdvance();
     }
-    return common::ERR_OK;
 }
 
 }  // namespace event
