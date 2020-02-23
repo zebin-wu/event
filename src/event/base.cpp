@@ -25,6 +25,7 @@
 #include <common/log.hpp>
 #include <platform/lock.hpp>
 #include <platform/clock.hpp>
+#include <platform/poll.hpp>
 
 namespace event {
 
@@ -110,11 +111,49 @@ class TimerBase {
     platform::Lock mutex;
 };
 
+class HandleBase {
+ public:
+    void addEvent(HandleEvent *evt) {
+
+        platform::Poll::PollMode mode;
+        platform::Poll::Callback cb =
+            static_cast<platform::Poll::Callback>(eventCb);
+        switch (evt->getOperation()) {
+        case HandleEvent::OP_READ:
+            mode = platform::Poll::POLL_READ;
+            break;
+        case HandleEvent::OP_WRITE:
+            mode = platform::Poll::POLL_WRITE;
+            break;
+        }
+        poll.add(evt->getHandle(), mode, cb, evt);
+    }
+
+    void delEvent(HandleEvent *evt) {
+        poll.del(evt->getHandle());
+    }
+
+    static void eventCb(platform::Poll::PollMode mode,
+        platform::Handle *handle, void *arg) {
+        HandleEvent *evt = static_cast<HandleEvent *>(arg);
+        evt->getCb()->call(evt);
+    }
+
+    void wait(u32 ms) {
+        poll.wait(ms);
+    }
+
+ private:
+    platform::Poll poll;
+    bool isWait;
+};
+
 class BasePriv {
  public:
     BasePriv(): loop(false) {}
 
     TimerBase timerBase;
+    HandleBase handleBase;
     bool loop;
 };
 
@@ -133,6 +172,8 @@ void Base::addEvent(Event *evt) {
     case Event::EV_TIMER:
         priv->timerBase.addEvent(static_cast<TimerEvent *>(evt));
         break;
+    case Event::EV_HANDLE:
+        priv->handleBase.addEvent(static_cast<HandleEvent *>(evt));
     default:
         ASSERT_NOTREACHED();
     }
@@ -147,6 +188,8 @@ void Base::delEvent(Event *evt) {
     switch (evt->getType()) {
     case Event::EV_TIMER:
         priv->timerBase.delEvent(static_cast<TimerEvent *>(evt));
+    case Event::EV_HANDLE:
+        priv->handleBase.delEvent(static_cast<HandleEvent *>(evt));
     default:
         ASSERT_NOTREACHED();
     }
@@ -163,6 +206,7 @@ void Base::dispatch() {
 
     while (priv->loop) {
         ms = priv->timerBase.timerAdvance();
+        priv->handleBase.wait(ms);
     }
 }
 
