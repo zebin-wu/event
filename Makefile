@@ -37,6 +37,7 @@ COMMON_DIR = $(ROOT_DIR)/common
 BUILD_DIR = $(ROOT_DIR)/build/$(ARCH)
 BIN_DIR = $(BUILD_DIR)/bin
 LIB_DIR = $(BUILD_DIR)/lib
+INSTALL_DIR =
 
 #
 # Toolchain
@@ -95,6 +96,12 @@ CPPFLAGS += $(addprefix -I, $(INCLUDES))
 #
 .PHONY: all
 all: common $(LIBEVENT_NAME)
+
+.PHONY:install
+install: all
+	$(QUIET)echo "Install $(PROJECT_NAME)";\
+	    [ -d $(INSTALL_DIR)/lib ] || mkdir -p $(INSTALL_DIR)/lib;\
+	    cp $(LIB_DIR)/* $(INSTALL_DIR)/lib -f
 
 #
 # The common rules

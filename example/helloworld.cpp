@@ -26,6 +26,9 @@
 #include <common/log.hpp>
 #include <platform/handle.hpp>
 
+/// The path of file to test the handle event
+#define HELLOWORLD_FILE_PATH "/tmp/helloworld"
+
 static event::Base base;
 
 class MyTimerCb: public event::TimerCb {
@@ -54,7 +57,7 @@ class MyHandleCb: public event::HandleCb {
     void write(event::HandleEvent *evt) const {
         platform::Handle *handle = evt->getHandle();
         log_info("writing...");
-        handle->write("hello world.\n", sizeof("Hello world.\n"));
+        handle->write("hello world.", sizeof("Hello world.\n"));
         base.delEvent(evt);
         evt->setOperation(event::HandleEvent::OP_READ);
         base.addEvent(evt);
@@ -79,7 +82,7 @@ int app_main(int argc, char *argv[]) {
         base.addEvent(&timerEvent);
 
         MyHandleCb handleCb;
-        platform::Handle handle("/home/zebin/helloworld",
+        platform::Handle handle(HELLOWORLD_FILE_PATH,
             platform::Handle::MO_CREAT |
             platform::Handle::MO_WRITE |
             platform::Handle::MO_READ);
