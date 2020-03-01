@@ -149,6 +149,9 @@ void HandleCb::call(Event *evt) const {
     case HandleEvent::OP_WRITE:
         write(handleEvt);
         break;
+    case HandleEvent::OP_EXCEPTION:
+        exception(handleEvt);
+        break;
     default:
         ASSERT_NOTREACHED();
         break;

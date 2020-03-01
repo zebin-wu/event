@@ -19,11 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#include <common/exception.hpp>
 #include <event/base.hpp>
 #include <event/event.hpp>
+#include <common/exception.hpp>
 #include <common/error.hpp>
 #include <common/log.hpp>
+#include <platform/handle.hpp>
 
 static event::Base base;
 
@@ -48,7 +49,28 @@ void MyTimerCb::timeout(event::TimerEvent *evt) const {
     base.addEvent(evt);
 }
 
-int main(int argc, char *argv[]) {
+class MyHandleCb: public event::HandleCb {
+ public:
+    void write(event::HandleEvent *evt) const {
+        platform::Handle *handle = evt->getHandle();
+        log_info("writing...");
+        handle->write("hello world.\n", sizeof("Hello world.\n"));
+        base.delEvent(evt);
+        evt->setOperation(event::HandleEvent::OP_READ);
+        base.addEvent(evt);
+    }
+    void read(event::HandleEvent *evt) const {
+        platform::Handle *handle = evt->getHandle();
+        char buf[128] = "";
+        handle->seek(platform::Handle::SEEK_MO_SET, 0);
+        handle->read(static_cast<void *>(buf), sizeof(buf));
+        log_info("%s", buf);
+        base.delEvent(evt);
+    }
+};
+
+/// The main entry of the app
+int app_main(int argc, char *argv[]) {
     try {
         MyTimerCb timerCb;
         MyTimerEvent timerEvent(&timerCb);
@@ -56,9 +78,20 @@ int main(int argc, char *argv[]) {
         timerEvent.setTimeout(1000);
         base.addEvent(&timerEvent);
 
+        MyHandleCb handleCb;
+        platform::Handle handle("/home/zebin/helloworld",
+            platform::Handle::MO_CREAT |
+            platform::Handle::MO_WRITE |
+            platform::Handle::MO_READ);
+        event::HandleEvent
+            handleEvent(&handleCb, &handle, event::HandleEvent::OP_WRITE);
+        base.addEvent(&handleEvent);
+
         common::Log::setLevel(common::Log::LOG_INFO);
 
         base.dispatch();
+    } catch (platform::HandleException e) {
+        log_err("Handle error: %s, Message: %s", e.what(), e.message());
     } catch (common::Exception e) {
         log_err("Error: %s, Message: %s", e.what(), e.message());
     }

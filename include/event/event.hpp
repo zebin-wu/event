@@ -99,6 +99,7 @@ class HandleEvent: public Event {
     enum Operation{
         OP_READ,        ///< read
         OP_WRITE,       ///< write
+        OP_EXCEPTION,   ///< exception
     };
     explicit HandleEvent(HandleCb *cb, platform::Handle *handle, Operation op);
     ~HandleEvent();
@@ -131,9 +132,9 @@ class TimerCb: public Callback {
 
 class HandleCb: public Callback {
  public:
-    virtual void read(HandleEvent *evt) const = 0;
-    virtual void write(HandleEvent *evt) const = 0;
-    virtual void exception(HandleEvent *evt) const = 0;
+    virtual void read(HandleEvent *evt) const {}
+    virtual void write(HandleEvent *evt) const {}
+    virtual void exception(HandleEvent *evt) const {}
     void call(Event *evt) const;
 };
 
