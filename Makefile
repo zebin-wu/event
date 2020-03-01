@@ -37,7 +37,7 @@ COMMON_DIR = $(ROOT_DIR)/common
 BUILD_DIR = $(ROOT_DIR)/build/$(ARCH)
 BIN_DIR = $(BUILD_DIR)/bin
 LIB_DIR = $(BUILD_DIR)/lib
-INSTALL_DIR =
+INSTALL_DIR ?=
 
 #
 # Toolchain
