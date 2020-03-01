@@ -106,17 +106,17 @@ u64 TimerEvent::getTimeMs() const {
     return timeMs;
 }
 
-HandleEvent::HandleEvent(HandleCb *cb, int handle, Operation op):
+HandleEvent::HandleEvent(HandleCb *cb, platform::Handle *handle, Operation op):
     Event(Event::EV_HANDLE, static_cast<Callback *>(cb)),
     handle(handle), op(op) {}
 
 HandleEvent::~HandleEvent() {}
 
-int HandleEvent::getHandle() const {
+platform::Handle *HandleEvent::getHandle() const {
     return handle;
 }
 
-void HandleEvent::setHandle(int handle) {
+void HandleEvent::setHandle(platform::Handle *handle) {
     this->handle = handle;
 }
 
@@ -149,8 +149,8 @@ void HandleCb::call(Event *evt) const {
     case HandleEvent::OP_WRITE:
         write(handleEvt);
         break;
-    case HandleEvent::OP_ERROR:
-        error(handleEvt);
+    case HandleEvent::OP_EXCEPTION:
+        exception(handleEvt);
         break;
     default:
         ASSERT_NOTREACHED();

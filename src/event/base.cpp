@@ -25,6 +25,7 @@
 #include <common/log.hpp>
 #include <platform/lock.hpp>
 #include <platform/clock.hpp>
+#include <platform/poll.hpp>
 
 namespace event {
 
@@ -73,7 +74,7 @@ class TimerBase {
         throw EventException(evt, common::ERR_PERM, "the event was not found");
     }
 
-    u32 timerAdvance() {
+    int timerAdvance() {
         TimerEvent *curEvt;
         TimerNode *cur;
         u64 curMs, tmpMs;
@@ -86,7 +87,7 @@ class TimerBase {
             tmpMs = curEvt->getTimeMs();
             curMs = platform::Clock::Instance().getTotalMs();
             if (TIME_AFTER(tmpMs, curMs)) {
-                return tmpMs - curMs;
+                return static_cast<int>(tmpMs - curMs);
             }
             mutex.lock();
             timerHead = cur->next;
@@ -110,11 +111,47 @@ class TimerBase {
     platform::Lock mutex;
 };
 
+class HandleBase {
+ public:
+    void addEvent(HandleEvent *evt) {
+        poll.add(evt->getHandle(), getPollMode(evt->getOperation()),
+            [] (platform::Poll::PollMode mode,
+                platform::Handle *handle, void *arg) {
+                HandleEvent *evt = static_cast<HandleEvent *>(arg);
+                evt->getCb()->call(evt);
+            }, evt);
+    }
+
+    void delEvent(HandleEvent *evt) {
+        poll.del(evt->getHandle(), getPollMode(evt->getOperation()));
+    }
+
+    void wait(int ms) {
+        poll.polling(ms);
+    }
+
+ private:
+    platform::Poll::PollMode getPollMode(HandleEvent::Operation op) {
+        switch (op) {
+        case HandleEvent::OP_READ:
+            return platform::Poll::POLL_READ;
+            break;
+        case HandleEvent::OP_WRITE:
+            return platform::Poll::POLL_WRITE;
+            break;
+        case HandleEvent::OP_EXCEPTION:
+            return platform::Poll::POLL_ERR;
+        }
+    }
+    platform::Poll poll;
+};
+
 class BasePriv {
  public:
     BasePriv(): loop(false) {}
 
     TimerBase timerBase;
+    HandleBase handleBase;
     bool loop;
 };
 
@@ -133,6 +170,9 @@ void Base::addEvent(Event *evt) {
     case Event::EV_TIMER:
         priv->timerBase.addEvent(static_cast<TimerEvent *>(evt));
         break;
+    case Event::EV_HANDLE:
+        priv->handleBase.addEvent(static_cast<HandleEvent *>(evt));
+        break;
     default:
         ASSERT_NOTREACHED();
     }
@@ -147,6 +187,9 @@ void Base::delEvent(Event *evt) {
     switch (evt->getType()) {
     case Event::EV_TIMER:
         priv->timerBase.delEvent(static_cast<TimerEvent *>(evt));
+    case Event::EV_HANDLE:
+        priv->handleBase.delEvent(static_cast<HandleEvent *>(evt));
+        break;
     default:
         ASSERT_NOTREACHED();
     }
@@ -154,7 +197,7 @@ void Base::delEvent(Event *evt) {
 }
 
 void Base::dispatch() {
-    u32 ms;
+    int timeout;
 
     if (priv->loop) {
         throw BaseException(this, common::ERR_BUSY, "the base is in loop");
@@ -162,7 +205,8 @@ void Base::dispatch() {
     priv->loop = true;
 
     while (priv->loop) {
-        ms = priv->timerBase.timerAdvance();
+        timeout = priv->timerBase.timerAdvance();
+        priv->handleBase.wait(timeout);
     }
 }
 

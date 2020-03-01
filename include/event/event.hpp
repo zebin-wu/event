@@ -23,6 +23,7 @@
 
 #include <common/exception.hpp>
 #include <platform/type.hpp>
+#include <platform/handle.hpp>
 
 /**
  * @file event.hpp
@@ -96,19 +97,19 @@ class TimerEvent: public Event {
 class HandleEvent: public Event {
  public:
     enum Operation{
-        OP_READ,
-        OP_WRITE,
-        OP_ERROR,
+        OP_READ,        ///< read
+        OP_WRITE,       ///< write
+        OP_EXCEPTION,   ///< exception
     };
-    explicit HandleEvent(HandleCb *cb, int handle, Operation op);
+    explicit HandleEvent(HandleCb *cb, platform::Handle *handle, Operation op);
     ~HandleEvent();
 
-    int getHandle() const;
-    void setHandle(int handle);
+    platform::Handle *getHandle() const;
+    void setHandle(platform::Handle *handle);
     Operation getOperation() const;
     void setOperation(Operation op);
  private:
-    int handle;
+    platform::Handle *handle;
     Operation op;
 };
 
@@ -131,9 +132,9 @@ class TimerCb: public Callback {
 
 class HandleCb: public Callback {
  public:
-    virtual void read(HandleEvent *evt) const = 0;
-    virtual void write(HandleEvent *evt) const = 0;
-    virtual void error(HandleEvent *evt) const = 0;
+    virtual void read(HandleEvent *evt) const {}
+    virtual void write(HandleEvent *evt) const {}
+    virtual void exception(HandleEvent *evt) const {}
     void call(Event *evt) const;
 };
 
