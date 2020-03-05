@@ -114,8 +114,8 @@ class TimerBase {
 class HandleBase {
  public:
     void addEvent(HandleEvent *evt) {
-        poll.add(evt->getHandle(), getPollMode(evt->getOperation()),
-            [] (platform::Poll::PollMode mode,
+        poll.add(evt->getHandle(), getEvent(evt->getOperation()),
+            [] (platform::Poll::Event mode,
                 platform::Handle *handle, void *arg) {
                 HandleEvent *evt = static_cast<HandleEvent *>(arg);
                 evt->getCb()->call(evt);
@@ -123,7 +123,7 @@ class HandleBase {
     }
 
     void delEvent(HandleEvent *evt) {
-        poll.del(evt->getHandle(), getPollMode(evt->getOperation()));
+        poll.del(evt->getHandle(), getEvent(evt->getOperation()));
     }
 
     void wait(int ms) {
@@ -131,16 +131,16 @@ class HandleBase {
     }
 
  private:
-    platform::Poll::PollMode getPollMode(HandleEvent::Operation op) {
+    platform::Poll::Event getEvent(HandleEvent::Operation op) {
         switch (op) {
         case HandleEvent::OP_READ:
-            return platform::Poll::POLL_READ;
+            return platform::Poll::EV_READ;
             break;
         case HandleEvent::OP_WRITE:
-            return platform::Poll::POLL_WRITE;
+            return platform::Poll::EV_WRITE;
             break;
         case HandleEvent::OP_EXCEPTION:
-            return platform::Poll::POLL_ERR;
+            return platform::Poll::EV_ERR;
             break;
         }
         ASSERT_NOTREACHED();
