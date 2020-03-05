@@ -32,9 +32,8 @@ VERSION ?= 0.9
 #
 # Directories
 #
-ROOT_DIR = .
-COMMON_DIR = $(ROOT_DIR)/common
-BUILD_DIR = $(ROOT_DIR)/build/$(ARCH)
+COMMON_DIR = common
+BUILD_DIR = build/$(ARCH)
 BIN_DIR = $(BUILD_DIR)/bin
 LIB_DIR = $(BUILD_DIR)/lib
 INSTALL_DIR ?=
@@ -95,7 +94,7 @@ CPPFLAGS += $(addprefix -I, $(INCLUDES))
 # Rule to build all
 #
 .PHONY: all
-all: common $(LIBEVENT_NAME)
+all: common $(LIBEVENT_DYNAMIC) $(LIBEVENT_STATIC)
 
 .PHONY:install
 install: all
@@ -107,12 +106,6 @@ install: all
 # The common rules
 #
 include $(COMMON_DIR)/make/common_rules.mk
-
-#
-# Rule to build $(LIBEVENT)
-#
-.PHONY: $(LIBEVENT_NAME)
-$(LIBEVENT_NAME): $(LIBEVENT_DYNAMIC) $(LIBEVENT_STATIC)
 
 #
 # Rule to build example
