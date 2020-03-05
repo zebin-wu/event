@@ -94,9 +94,9 @@ int app_main(int argc, char *argv[]) {
 
         base.dispatch();
     } catch (platform::HandleException e) {
-        log_err("Handle error: %s, Message: %s", e.what(), e.message());
+        log_err("Handle: %s, Message: %s", e.what(), e.message());
     } catch (common::Exception e) {
-        log_err("Error: %s, Message: %s", e.what(), e.message());
+        log_err("%s, Message: %s", e.what(), e.message());
     }
 
     return 0;

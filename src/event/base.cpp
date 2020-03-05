@@ -141,7 +141,9 @@ class HandleBase {
             break;
         case HandleEvent::OP_EXCEPTION:
             return platform::Poll::POLL_ERR;
+            break;
         }
+        ASSERT_NOTREACHED();
     }
     platform::Poll poll;
 };
