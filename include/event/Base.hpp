@@ -21,7 +21,9 @@
 */
 #pragma once
 
+#include <Callback.hpp>
 #include <common/exception.hpp>
+#include <type_traits>
 
 /**
  * @file base.hpp
@@ -30,29 +32,22 @@
 
 namespace event {
 
+// Forward declare the Event class
 class Event;
-class BasePriv;
 
+template <class T>
 class Base {
  public:
-    Base();
-    ~Base();
-    void addEvent(Event *evt);
-    void delEvent(Event *evt);
-    void dispatch();
- private:
-    BasePriv *priv;
-};
-
-class BaseException: public common::Exception {
- public:
-    explicit BaseException(Base *base, common::ErrorCode err):
-        Exception(err), base(base) {}
-    explicit BaseException(Base *base,
-        common::ErrorCode err, const char *message):
-        Exception(err, message), base(base) {}
- private:
-    Base *base;
+    Base() {
+        // An error here indicates you're trying to implement 
+        // EventHandler with a type that is not derived from Event
+		static_assert(std::is_base_of<Event, T>::value,
+            "Base<T>: T must be a class derived from Event");
+    }
+    virtual ~Base() {}
+    virtual void addEvent(T & e, Callback<T> & cb) = 0;
+    virtual void delEvent(T & e) = 0;
+    virtual int dispatch(int ms) = 0;
 };
 
 }  // namespace event

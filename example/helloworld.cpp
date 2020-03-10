@@ -55,7 +55,8 @@ void MyTimerCb::timeout(event::TimerEvent *evt) const {
 class MyHandleCb: public event::HandleCb {
  public:
     void write(event::HandleEvent *evt) const {
-        platform::Handle *handle = evt->getHandle();
+        platform::FileHandle *handle =
+            static_cast<platform::FileHandle *>(evt->getHandle());
         log_info("writing...");
         handle->write("hello world.", sizeof("Hello world.\n"));
         base.delEvent(evt);
@@ -63,9 +64,10 @@ class MyHandleCb: public event::HandleCb {
         base.addEvent(evt);
     }
     void read(event::HandleEvent *evt) const {
-        platform::Handle *handle = evt->getHandle();
+        platform::FileHandle *handle =
+            static_cast<platform::FileHandle *>(evt->getHandle());
         char buf[128] = "";
-        handle->seek(platform::Handle::SEEK_MO_SET, 0);
+        handle->seek(platform::FileHandle::S_SET, 0);
         handle->read(static_cast<void *>(buf), sizeof(buf));
         log_info("%s", buf);
         base.delEvent(evt);
@@ -82,10 +84,10 @@ int app_main(int argc, char *argv[]) {
         base.addEvent(&timerEvent);
 
         MyHandleCb handleCb;
-        platform::Handle handle(HELLOWORLD_FILE_PATH,
-            platform::Handle::MO_CREAT |
-            platform::Handle::MO_WRITE |
-            platform::Handle::MO_READ);
+        platform::FileHandle handle(HELLOWORLD_FILE_PATH,
+            platform::FileHandle::F_CREAT |
+            platform::FileHandle::F_WRITE |
+            platform::FileHandle::F_READ);
         event::HandleEvent
             handleEvent(&handleCb, &handle, event::HandleEvent::OP_WRITE);
         base.addEvent(&handleEvent);
