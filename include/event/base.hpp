@@ -21,12 +21,13 @@
 */
 #pragma once
 
-#include <common/exception.hpp>
 #include <type_traits>
+#include <event/callback.hpp>
+#include <common/exception.hpp>
 
 /**
- * @file Callback.hpp
- * @brief Callback class
+ * @file base.hpp
+ * @brief Event base class
 */
 
 namespace event {
@@ -34,32 +35,19 @@ namespace event {
 // Forward declare the Event class
 class Event;
 
-/**
- * @brief Base callback class, all callback inherit from this class
- */
 template <class T>
-class Callback {
+class Base {
  public:
-
-	/**
-	 * @brief Default constructor that enforces the template type
-	 */
-	Callback() {
-		// An error here indicates you're trying to implement Callback with a type that is not derived from Event
-		static_assert(std::is_base_of<Event, T>::value, "Callback<T>: T must be a class derived from Event");
-	}
-
-	/**
-	 * @brief Empty virtual destructor
-	*/
-	virtual ~Callback() { }
-
-	/**
-	 * @brief Pure virtual method for implementing the body of the listener
-	 *
-	 * @param e is the event instance
-	*/
-    virtual void onEvent(T & e) const = 0;
+    Base() {
+        // An error here indicates you're trying to implement
+        // EventHandler with a type that is not derived from Event
+        static_assert(std::is_base_of<Event, T>::value,
+            "Base<T>: T must be a class derived from Event");
+    }
+    virtual ~Base() {}
+    virtual void addEvent(T *e, const Callback<T> &cb) = 0;
+    virtual void delEvent(T *e) = 0;
+    virtual int dispatch(int ms) = 0;
 };
 
 }  // namespace event

@@ -21,8 +21,9 @@
 */
 #pragma once
 
-#include <event/Event.hpp>
-#include <event/Base.hpp>
+#include <event/event.hpp>
+#include <event/base.hpp>
+#include <common/object.hpp>
 #include <platform/poll.hpp>
 
 /**
@@ -31,8 +32,6 @@
 */
 
 namespace event {
-
-typedef common::ClassException<HandleEvent> HandleEventException;
 
 class HandleEvent: public Event {
  public:
@@ -51,7 +50,9 @@ class HandleEvent: public Event {
      * @param handle
      * @param op
     */
-    explicit HandleEvent(platform::Handle & handle, Operation op);
+    explicit HandleEvent(platform::Handle *handle,
+        Operation op, common::Object *arg = nullptr):
+        Event(arg), handle(handle), op(op) {}
 
 
     /**
@@ -65,7 +66,7 @@ class HandleEvent: public Event {
      *
      * @return
     */
-    platform::Handle & getHandle() const {
+    platform::Handle *getHandle() const {
         return handle;
     }
 
@@ -75,7 +76,7 @@ class HandleEvent: public Event {
      *
      * @param handle
     */
-    void setHandle(platform::Handle & handle) {
+    void setHandle(platform::Handle *handle) {
         this->handle = handle;
     }
 
@@ -95,7 +96,7 @@ class HandleEvent: public Event {
      *
      * @return
     */
-    Callback<HandleEvent> & getCb() const {
+    const Callback<HandleEvent> *getCb() const {
         return cb;
     }
 
@@ -105,7 +106,7 @@ class HandleEvent: public Event {
      *
      * @param cb
     */
-    void setCb(Callback<HandleEvent> & cb) {
+    void setCb(Callback<HandleEvent> *cb) {
         this->cb = cb;
     }
 
@@ -120,53 +121,23 @@ class HandleEvent: public Event {
     }
 
  private:
-    Callback<HandleEvent> & cb;
-    platform::Handle & handle;
+    Callback<HandleEvent> *cb;
+    platform::Handle *handle;
     Operation op;
 };
 
+typedef common::ObjectException<HandleEvent> HandleEventException;
+
 class HandleBase: public Base<HandleEvent> {
  public:
-    void addEvent(HandleEvent & e, Callback<HandleEvent> & cb) override {
-        if (e.isPending()) {
-            return;
-        }
-        e.setPending(true);
-        poll.add(e.getHandle(), getEvent(e.getOperation()),
-            [] (platform::Poll::Event mode,
-                platform::Handle & handle, void *arg) {
-                HandleEvent *e = static_cast<HandleEvent *>(arg);
-                e->getCb().onEvent(*e);
-            }, &e);
-    }
+    void addEvent(HandleEvent *e, const Callback<HandleEvent> &cb) override;
 
-    void delEvent(HandleEvent & e) override {
-        if (!e.isPending()) {
-            return;
-        }
-        poll.del(e.getHandle(), getEvent(e.getOperation()));
-    }
+    void delEvent(HandleEvent *e) override;
 
-    int dispatch(int ms) override {
-        poll.polling(ms);
-    }
+    int dispatch(int ms) override;
 
  private:
-    platform::Poll::Event getEvent(HandleEvent::Operation op) {
-        platform::Poll::Event e;
-        switch (op) {
-        case HandleEvent::OP_READ:
-            e = platform::Poll::EV_READ;
-            break;
-        case HandleEvent::OP_WRITE:
-            e = platform::Poll::EV_WRITE;
-            break;
-        case HandleEvent::OP_EXCEPTION:
-            e = platform::Poll::EV_ERR;
-            break;
-        }
-        return e;
-    }
+    platform::Poll::Event getEvent(HandleEvent::Operation op);
     platform::Poll poll;
 };
 

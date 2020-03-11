@@ -21,33 +21,58 @@
 */
 #pragma once
 
-#include <Callback.hpp>
+#include <event/callback.hpp>
+#include <event/event.hpp>
+#include <event/base.hpp>
+#include <common/object.hpp>
 #include <common/exception.hpp>
-#include <type_traits>
+#include <common/assert.hpp>
+#include <common/log.hpp>
+#include <platform/lock.hpp>
+#include <platform/clock.hpp>
 
 /**
- * @file base.hpp
+ * @file TimerEvent.hpp
  * @brief Event base class
 */
 
+#define TIMER_DELAY_MAX 0x7fffffffU
+
 namespace event {
 
-// Forward declare the Event class
-class Event;
-
-template <class T>
-class Base {
+class TimerEvent: public Event {
  public:
-    Base() {
-        // An error here indicates you're trying to implement 
-        // EventHandler with a type that is not derived from Event
-		static_assert(std::is_base_of<Event, T>::value,
-            "Base<T>: T must be a class derived from Event");
-    }
-    virtual ~Base() {}
-    virtual void addEvent(T & e, Callback<T> & cb) = 0;
-    virtual void delEvent(T & e) = 0;
-    virtual int dispatch(int ms) = 0;
+    explicit TimerEvent(common::Object *arg = nullptr): Event(arg), timeMs(0) {}
+
+    virtual ~TimerEvent() {}
+
+    void setTimeout(u32 ms);
+
+    u64 getTimeMs() const;
+
+ private:
+    u64 timeMs;
+};
+
+typedef common::ObjectException<TimerEvent> TimerEventException;
+
+class TimerBase: public Base<TimerEvent> {
+ public:
+    TimerBase(): timerHead(nullptr) {}
+
+    ~TimerBase() override;
+
+    void addEvent(TimerEvent *e, const Callback<TimerEvent> &cb) override;
+
+    void delEvent(TimerEvent *e) override;
+
+    int dispatch(int ms) override;
+
+ private:
+    class TimerNode;
+    int timerAdvance();
+    TimerNode *timerHead;
+    platform::Lock mutex;
 };
 
 }  // namespace event

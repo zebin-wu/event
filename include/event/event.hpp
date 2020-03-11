@@ -21,7 +21,7 @@
 */
 #pragma once
 
-#include <event/Callback.hpp>
+#include <common/object.hpp>
 #include <common/exception.hpp>
 #include <platform/type.hpp>
 #include <platform/handle.hpp>
@@ -34,11 +34,17 @@ namespace event {
  */
 class Event {
  public:
-
 	/**
-	 * @brief Default constructor
+	 * @brief Default constructor.
 	*/
     Event(): pending(false) {}
+
+    /**
+     * @brief Constructor with the argument of event.
+     * 
+     * @arg is the argument of event
+    */
+    explicit Event(common::Object *arg): pending(false), arg(arg) {}
 
 
 	/**
@@ -68,9 +74,18 @@ class Event {
         mutex.unlock();
     }
 
+    common::Object *getArg() const {
+        return arg;
+    }
+
+    void setArg(common::Object *arg) {
+        this->arg = arg;
+    }
+
  private:
     bool pending;
     platform::Lock mutex;
+    common::Object *arg;
 };
 
 }  // namespace event
