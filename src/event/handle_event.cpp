@@ -19,35 +19,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#pragma once
-
-#include <type_traits>
-#include <event/callback.hpp>
-#include <common/exception.hpp>
-
-/**
- * @file base.hpp
- * @brief Event base class
-*/
+#include <event/handle_event.hpp>
 
 namespace event {
 
-// Forward declare the Event class
-class Event;
-
-template <class T>
-class Base {
- public:
-    Base() {
-        // An error here indicates you're trying to implement
-        // EventHandler with a type that is not derived from Event
-        static_assert(std::is_base_of<Event, T>::value,
-            "Base<T>: T must be a class derived from Event");
+void HandleBase::addEvent(HandleEvent *e, const Callback<HandleEvent> &cb) {
+    if (e->isPending()) {
+        return;
     }
-    virtual ~Base() {}
-    virtual void addEvent(T *e, const Callback<T> &cb) = 0;
-    virtual void delEvent(T *e) = 0;
-    virtual int dispatch(int ms) = 0;
-};
+    e->setPending(true);
+    poll.add(e->getHandle(), getEvent(e->getOperation()),
+        [] (platform::Poll::Event mode,
+            platform::Handle *handle, void *arg) {
+            HandleEvent *e = static_cast<HandleEvent *>(arg);
+            e->getCb()->onEvent(e);
+        }, e);
+}
+
+void HandleBase::delEvent(HandleEvent *e) {
+    if (!e->isPending()) {
+        return;
+    }
+    poll.del(e->getHandle(), getEvent(e->getOperation()));
+}
+
+int HandleBase::dispatch(int ms) {
+    poll.polling(ms);
+}
+
+platform::Poll::Event HandleBase::getEvent(HandleEvent::Operation op) {
+    platform::Poll::Event e;
+    switch (op) {
+    case HandleEvent::OP_READ:
+        e = platform::Poll::EV_READ;
+        break;
+    case HandleEvent::OP_WRITE:
+        e = platform::Poll::EV_WRITE;
+        break;
+    case HandleEvent::OP_EXCEPTION:
+        e = platform::Poll::EV_ERR;
+        break;
+    }
+    return e;
+}
 
 }  // namespace event

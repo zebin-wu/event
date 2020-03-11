@@ -21,71 +21,46 @@
 */
 #pragma once
 
-#include <common/object.hpp>
+#include <type_traits>
 #include <common/exception.hpp>
-#include <platform/type.hpp>
-#include <platform/handle.hpp>
-#include <platform/lock.hpp>
+
+/**
+ * @file Callback.hpp
+ * @brief Callback class
+*/
 
 namespace event {
 
+// Forward declare the Event class
+class Event;
+
 /**
- * @brief The base event class, all events inherit from this class
+ * @brief Base callback class, all callback inherit from this class
  */
-class Event {
+template <class T>
+class Callback {
  public:
-	/**
-	 * @brief Default constructor.
-	*/
-    Event(): pending(false) {}
+    /**
+     * @brief Default constructor that enforces the template type
+     */
+    Callback() {
+        // An error here indicates you're trying to implement
+        // Callback with a type that is not derived from Event
+        static_assert(std::is_base_of<Event, T>::value,
+            "Callback<T>: T must be a class derived from Event");
+    }
 
     /**
-     * @brief Constructor with the argument of event.
-     * 
-     * @arg is the argument of event
+     * @brief Empty virtual destructor
     */
-    explicit Event(common::Object *arg): pending(false), arg(arg) {}
-
-
-	/**
-	 * @brief Empty virtual destructor
-	*/
-    virtual ~Event() {}
-
+    virtual ~Callback() { }
 
     /**
-     * @brief Whether the event has been canceled
+     * @brief Pure virtual method for implementing the body of the listener
      *
-     * @return true if the event is pending
+     * @param e is the event instance
     */
-    bool isPending() const {
-        return pending;
-    }
-
-
-    /**
-     * @brief Sets the pending status for the event
-     * 
-     * @param pending Whether the event is pending or not
-    */
-    void setPending(bool pending) {
-        mutex.lock();
-        pending = pending;
-        mutex.unlock();
-    }
-
-    common::Object *getArg() const {
-        return arg;
-    }
-
-    void setArg(common::Object *arg) {
-        this->arg = arg;
-    }
-
- private:
-    bool pending;
-    platform::Lock mutex;
-    common::Object *arg;
+    virtual void onEvent(T *) const = 0;
 };
 
 }  // namespace event

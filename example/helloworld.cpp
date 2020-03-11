@@ -19,8 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#include <event/base.hpp>
-#include <event/event.hpp>
+#include <event/timer_event.hpp>
+#include <event/handle_event.hpp>
+#include <common/object.hpp>
 #include <common/exception.hpp>
 #include <common/error.hpp>
 #include <common/log.hpp>
@@ -29,70 +30,40 @@
 /// The path of file to test the handle event
 #define HELLOWORLD_FILE_PATH "/tmp/helloworld"
 
-static event::Base base;
+static event::TimerBase timerBase;
 
-class MyTimerCb: public event::TimerCb {
+class TimerArg: public common::Object {
  public:
-    void timeout(event::TimerEvent *evt) const;
-};
-
-class MyTimerEvent: public event::TimerEvent {
- public:
-    explicit MyTimerEvent(MyTimerCb *cb): count(0),
-        TimerEvent(dynamic_cast<event::TimerCb *>(cb)) {}
+    TimerArg(): count(0) {}
 
     u32 count;
 };
 
-void MyTimerCb::timeout(event::TimerEvent *evt) const {
-    MyTimerEvent *myEvt = static_cast<MyTimerEvent *>(evt);
-
-    log_info("%s(): count: %u", __func__, myEvt->count++);
-    evt->setTimeout(1000);
-    base.addEvent(evt);
-}
-
-class MyHandleCb: public event::HandleCb {
+class MyTimerCb: public event::Callback<event::TimerEvent> {
  public:
-    void write(event::HandleEvent *evt) const {
-        platform::Handle *handle = evt->getHandle();
-        log_info("writing...");
-        handle->write("hello world.", sizeof("Hello world.\n"));
-        base.delEvent(evt);
-        evt->setOperation(event::HandleEvent::OP_READ);
-        base.addEvent(evt);
-    }
-    void read(event::HandleEvent *evt) const {
-        platform::Handle *handle = evt->getHandle();
-        char buf[128] = "";
-        handle->seek(platform::Handle::SEEK_MO_SET, 0);
-        handle->read(static_cast<void *>(buf), sizeof(buf));
-        log_info("%s", buf);
-        base.delEvent(evt);
+    void onEvent(event::TimerEvent *e) const override {
+        TimerArg *arg = dynamic_cast<TimerArg *>(e->getArg());
+        log_info("%s(): count: %u", __func__, arg->count++);
+        e->setTimeout(1000);
+        timerBase.addEvent(e, *this);
     }
 };
 
 /// The main entry of the app
 int app_main(int argc, char *argv[]) {
     try {
+        TimerArg timerArg;
         MyTimerCb timerCb;
-        MyTimerEvent timerEvent(&timerCb);
+        event::TimerEvent timerEvent(&timerArg);
 
         timerEvent.setTimeout(1000);
-        base.addEvent(&timerEvent);
-
-        MyHandleCb handleCb;
-        platform::Handle handle(HELLOWORLD_FILE_PATH,
-            platform::Handle::MO_CREAT |
-            platform::Handle::MO_WRITE |
-            platform::Handle::MO_READ);
-        event::HandleEvent
-            handleEvent(&handleCb, &handle, event::HandleEvent::OP_WRITE);
-        base.addEvent(&handleEvent);
+        timerBase.addEvent(&timerEvent, timerCb);
 
         common::Log::setLevel(common::Log::LOG_INFO);
 
-        base.dispatch();
+        while (1) {
+            timerBase.dispatch(0);
+        }
     } catch (platform::HandleException e) {
         log_err("Handle: %s, Message: %s", e.what(), e.message());
     } catch (common::Exception e) {

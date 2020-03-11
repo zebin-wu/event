@@ -21,71 +21,58 @@
 */
 #pragma once
 
+#include <event/callback.hpp>
+#include <event/event.hpp>
+#include <event/base.hpp>
 #include <common/object.hpp>
 #include <common/exception.hpp>
-#include <platform/type.hpp>
-#include <platform/handle.hpp>
+#include <common/assert.hpp>
+#include <common/log.hpp>
 #include <platform/lock.hpp>
+#include <platform/clock.hpp>
+
+/**
+ * @file TimerEvent.hpp
+ * @brief Event base class
+*/
+
+#define TIMER_DELAY_MAX 0x7fffffffU
 
 namespace event {
 
-/**
- * @brief The base event class, all events inherit from this class
- */
-class Event {
+class TimerEvent: public Event {
  public:
-	/**
-	 * @brief Default constructor.
-	*/
-    Event(): pending(false) {}
+    explicit TimerEvent(common::Object *arg = nullptr): Event(arg), timeMs(0) {}
 
-    /**
-     * @brief Constructor with the argument of event.
-     * 
-     * @arg is the argument of event
-    */
-    explicit Event(common::Object *arg): pending(false), arg(arg) {}
+    virtual ~TimerEvent() {}
 
+    void setTimeout(u32 ms);
 
-	/**
-	 * @brief Empty virtual destructor
-	*/
-    virtual ~Event() {}
-
-
-    /**
-     * @brief Whether the event has been canceled
-     *
-     * @return true if the event is pending
-    */
-    bool isPending() const {
-        return pending;
-    }
-
-
-    /**
-     * @brief Sets the pending status for the event
-     * 
-     * @param pending Whether the event is pending or not
-    */
-    void setPending(bool pending) {
-        mutex.lock();
-        pending = pending;
-        mutex.unlock();
-    }
-
-    common::Object *getArg() const {
-        return arg;
-    }
-
-    void setArg(common::Object *arg) {
-        this->arg = arg;
-    }
+    u64 getTimeMs() const;
 
  private:
-    bool pending;
+    u64 timeMs;
+};
+
+typedef common::ObjectException<TimerEvent> TimerEventException;
+
+class TimerBase: public Base<TimerEvent> {
+ public:
+    TimerBase(): timerHead(nullptr) {}
+
+    ~TimerBase() override;
+
+    void addEvent(TimerEvent *e, const Callback<TimerEvent> &cb) override;
+
+    void delEvent(TimerEvent *e) override;
+
+    int dispatch(int ms) override;
+
+ private:
+    class TimerNode;
+    int timerAdvance();
+    TimerNode *timerHead;
     platform::Lock mutex;
-    common::Object *arg;
 };
 
 }  // namespace event
