@@ -32,11 +32,11 @@ namespace event {
 class TimerBus::TimerNode {
  public:
     explicit TimerNode(TimerEvent *e,
-        const Callback<TimerEvent> & cb, TimerNode *next = nullptr):
+        const Callback<TimerEvent> *cb, TimerNode *next = nullptr):
         e(e), next(next), cb(cb) {}
 
     TimerEvent *e;
-    const Callback<TimerEvent> & cb;
+    const Callback<TimerEvent> *cb;
     TimerNode *next;
 };
 
@@ -68,7 +68,7 @@ TimerBus::~TimerBus() {
     }
 }
 
-void TimerBus::addEvent(TimerEvent *e, const Callback<TimerEvent> & cb) {
+void TimerBus::addEvent(TimerEvent *e, const Callback<TimerEvent> *cb) {
     u64 timeMs;
     TimerNode **t = &timerHead;
     timeMs = e->getTimeMs();
@@ -127,7 +127,7 @@ int TimerBus::timerAdvance() {
         mutex.lock();
         cur = timerHead;
         curEvt = cur->e;
-        curCb = &(cur->cb);
+        curCb = cur->cb;
         mutex.unlock();
         tmpMs = curEvt->getTimeMs();
         curMs = platform::Clock::Instance().getTotalMs();

@@ -61,7 +61,7 @@ class TimerBus: public Bus<TimerEvent> {
 	*/
     ~TimerBus() override;
 
-    void addEvent(TimerEvent *e, const Callback<TimerEvent> &cb) override;
+    void addEvent(TimerEvent *e, const Callback<TimerEvent> *cb) override;
 
     void delEvent(TimerEvent *e) override;
 

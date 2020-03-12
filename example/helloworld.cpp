@@ -41,7 +41,7 @@ class MyTimerCb: public event::Callback<event::TimerEvent> {
         TimerArg *arg = dynamic_cast<TimerArg *>(e->getArg());
         log_info("%s(): count: %u", __func__, arg->count++);
         e->setTimeout(1000);
-        loop.TimerBus::addEvent(e, *this);
+        loop.TimerBus::addEvent(e, this);
     }
 };
 
@@ -53,7 +53,7 @@ int app_main(int argc, char *argv[]) {
         event::TimerEvent timerEvent(&timerArg);
 
         timerEvent.setTimeout(1000);
-        loop.TimerBus::addEvent(&timerEvent, timerCb);
+        loop.TimerBus::addEvent(&timerEvent, &timerCb);
 
         common::Log::setLevel(common::Log::LOG_INFO);
 

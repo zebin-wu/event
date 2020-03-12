@@ -24,11 +24,12 @@
 
 namespace event {
 
-void HandleBus::addEvent(HandleEvent *e, const Callback<HandleEvent> &cb) {
+void HandleBus::addEvent(HandleEvent *e, const Callback<HandleEvent> *cb) {
     if (e->isPending()) {
         return;
     }
     e->setPending(true);
+    e->setCb(cb);
     poll.add(e->getHandle(), getEvent(e->getOperation()),
         [] (platform::Poll::Event mode,
             platform::Handle *handle, void *arg) {

@@ -64,7 +64,7 @@ class Bus {
      * @param e Pointer to the event
      * @param cb Callback reference
     */
-    virtual void addEvent(T *e, const Callback<T> &cb) = 0;
+    virtual void addEvent(T *e, const Callback<T> *cb) = 0;
 
 
     /**

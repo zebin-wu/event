@@ -105,7 +105,7 @@ class HandleEvent: public Event {
      *
      * @param cb
     */
-    void setCb(Callback<HandleEvent> *cb) {
+    void setCb(const Callback<HandleEvent> *cb) {
         this->cb = cb;
     }
 
@@ -120,7 +120,7 @@ class HandleEvent: public Event {
     }
 
  private:
-    Callback<HandleEvent> *cb;
+    const Callback<HandleEvent> *cb;
     platform::Handle *handle;
     Operation op;
 };
@@ -129,7 +129,7 @@ typedef common::ObjectException<HandleEvent> HandleEventException;
 
 class HandleBus: public Bus<HandleEvent> {
  public:
-    void addEvent(HandleEvent *e, const Callback<HandleEvent> &cb) override;
+    void addEvent(HandleEvent *e, const Callback<HandleEvent> *cb) override;
 
     void delEvent(HandleEvent *e) override;
 
