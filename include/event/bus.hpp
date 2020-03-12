@@ -41,9 +41,9 @@ class Event;
 template <class T>
 class Bus {
  public:
-	/**
-	 * @brief Default constructor that enforces the template type
-	*/
+    /**
+     * @brief Default constructor that enforces the template type
+    */
     Bus() {
         // An error here indicates you're trying to implement
         // event with a type that is not derived from Event
@@ -53,8 +53,8 @@ class Bus {
 
 
     /**
-	 * @brief Empty virtual destructor
-	*/
+     * @brief Empty virtual destructor
+    */
     virtual ~Bus() {}
 
 
@@ -86,7 +86,7 @@ class Bus {
     /**
      * @brief Call the callback corresponding to the event when the event is triggered
      * 
-     * @param ms Specifies the maximum wait time in milliseconds(-1 == infinite)
+     * @param timeout Specifies the maximum wait time in milliseconds(-1 == infinite)
      * 
      * @return Specifies the maximum wait time to return @c dispatch(), -1 if it do not need to wait
     */

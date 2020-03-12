@@ -26,31 +26,30 @@
 #include <common/log.hpp>
 #include <platform/handle.hpp>
 
-static event::Loop loop;
-
-class TimerArg: public common::Object {
+class MyTimerEvent: public event::TimerEvent {
  public:
-    TimerArg(): count(0) {}
+    explicit MyTimerEvent(event::Loop *loop): count(0), loop(loop) {}
 
     u32 count;
+    event::Loop *loop;
 };
 
 class MyTimerCb: public event::Callback<event::TimerEvent> {
  public:
     void onEvent(event::TimerEvent *e) const override {
-        TimerArg *arg = dynamic_cast<TimerArg *>(e->getArg());
-        log_info("%s(): count: %u", __func__, arg->count++);
-        e->setTimeout(1000);
-        loop.TimerBus::addEvent(e, this);
+        MyTimerEvent *mye = static_cast<MyTimerEvent *>(e);
+        log_info("%s(): count: %u", __func__, mye->count++);
+        mye->setTimeout(1000);
+        mye->loop->TimerBus::addEvent(e, this);
     }
 };
 
 /// The main entry of the app
 int app_main(int argc, char *argv[]) {
     try {
-        TimerArg timerArg;
+        event::Loop loop;
         MyTimerCb timerCb;
-        event::TimerEvent timerEvent(&timerArg);
+        MyTimerEvent timerEvent(&loop);
 
         timerEvent.setTimeout(1000);
         loop.TimerBus::addEvent(&timerEvent, &timerCb);

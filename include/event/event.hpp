@@ -39,22 +39,15 @@ namespace event {
  */
 class Event {
  public:
-	/**
-	 * @brief Default constructor
-	*/
+    /**
+     * @brief Default constructor
+    */
     Event(): pending(false) {}
 
+
     /**
-     * @brief Constructor with the argument of event
-     * 
-     * @arg is the argument of event
+     * @brief Empty virtual destructor
     */
-    explicit Event(common::Object *arg): pending(false), arg(arg) {}
-
-
-	/**
-	 * @brief Empty virtual destructor
-	*/
     virtual ~Event() {}
 
 
@@ -79,18 +72,9 @@ class Event {
         mutex.unlock();
     }
 
-    common::Object *getArg() const {
-        return arg;
-    }
-
-    void setArg(common::Object *arg) {
-        this->arg = arg;
-    }
-
  private:
     bool pending;
     platform::Lock mutex;
-    common::Object *arg;
 };
 
 }  // namespace event
