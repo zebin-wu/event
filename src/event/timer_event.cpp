@@ -20,17 +20,23 @@
  * SOFTWARE.
 */
 #include <event/timer_event.hpp>
+#include <common/object.hpp>
+#include <common/exception.hpp>
+#include <common/assert.hpp>
+#include <common/log.hpp>
+#include <platform/lock.hpp>
+#include <platform/clock.hpp>
 
 namespace event {
 
-class TimerBase::TimerNode {
+class TimerBus::TimerNode {
  public:
     explicit TimerNode(TimerEvent *e,
-        const Callback<TimerEvent> & cb, TimerNode *next = nullptr):
+        const Callback<TimerEvent> *cb, TimerNode *next = nullptr):
         e(e), next(next), cb(cb) {}
 
     TimerEvent *e;
-    const Callback<TimerEvent> & cb;
+    const Callback<TimerEvent> *cb;
     TimerNode *next;
 };
 
@@ -53,7 +59,7 @@ u64 TimerEvent::getTimeMs() const {
 }
 
 
-TimerBase::~TimerBase() {
+TimerBus::~TimerBus() {
     TimerNode *cur;
     while (timerHead) {
         cur = timerHead;
@@ -62,7 +68,7 @@ TimerBase::~TimerBase() {
     }
 }
 
-void TimerBase::addEvent(TimerEvent *e, const Callback<TimerEvent> & cb) {
+void TimerBus::addEvent(TimerEvent *e, const Callback<TimerEvent> *cb) {
     u64 timeMs;
     TimerNode **t = &timerHead;
     timeMs = e->getTimeMs();
@@ -83,7 +89,7 @@ void TimerBase::addEvent(TimerEvent *e, const Callback<TimerEvent> & cb) {
     mutex.unlock();
 }
 
-void TimerBase::delEvent(TimerEvent *e) {
+void TimerBus::delEvent(TimerEvent *e) {
     TimerNode **t = &timerHead, *cur;
 
     if (!e->isPending()) {
@@ -107,11 +113,11 @@ void TimerBase::delEvent(TimerEvent *e) {
         common::ERR_PERM, "the event was not found");
 }
 
-int TimerBase::dispatch(int ms) {
-    return timerAdvance() + ms;
+int TimerBus::dispatch() {
+    return timerAdvance();
 }
 
-int TimerBase::timerAdvance() {
+int TimerBus::timerAdvance() {
     TimerEvent *curEvt;
     const Callback<TimerEvent> *curCb;
     TimerNode *cur;
@@ -121,7 +127,7 @@ int TimerBase::timerAdvance() {
         mutex.lock();
         cur = timerHead;
         curEvt = cur->e;
-        curCb = &(cur->cb);
+        curCb = cur->cb;
         mutex.unlock();
         tmpMs = curEvt->getTimeMs();
         curMs = platform::Clock::Instance().getTotalMs();

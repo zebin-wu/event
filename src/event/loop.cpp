@@ -19,59 +19,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#pragma once
-
-#include <event/event.hpp>
-#include <event/bus.hpp>
-
-/**
- * @file timer_event.hpp
- * @brief Timer event interfaces
-*/
-
-#define TIMER_DELAY_MAX 0x7fffffffU
+#include <event/loop.hpp>
 
 namespace event {
 
-class TimerEvent: public Event {
- public:
-    explicit TimerEvent(common::Object *arg = nullptr): Event(arg), timeMs(0) {}
+void Loop::start() {
+    int ms;
+    if (loop) {
+        return;
+    }
+    loop = true;
+    while (loop) {
+        ms = TimerBus::dispatch();
+        HandleBus::dispatch(ms);
+    }
+}
 
-    /**
-     * @brief Empty virtual destructor
-    */
-    virtual ~TimerEvent() {}
-
-    void setTimeout(u32 ms);
-
-    u64 getTimeMs() const;
-
- private:
-    u64 timeMs;
-};
-
-typedef common::ObjectException<TimerEvent> TimerEventException;
-
-class TimerBus: public Bus<TimerEvent> {
- public:
-    TimerBus(): timerHead(nullptr) {}
-
-    /**
-	 * @brief Empty virtual destructor
-	*/
-    ~TimerBus() override;
-
-    void addEvent(TimerEvent *e, const Callback<TimerEvent> *cb) override;
-
-    void delEvent(TimerEvent *e) override;
-
-    int dispatch() override;
-
- private:
-    class TimerNode;
-    int timerAdvance();
-    TimerNode *timerHead;
-    platform::Lock mutex;
-};
+void Loop::exit() {
+    loop = false;
+}
 
 }  // namespace event

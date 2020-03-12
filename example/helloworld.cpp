@@ -19,18 +19,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#include <event/timer_event.hpp>
-#include <event/handle_event.hpp>
+#include <event/loop.hpp>
 #include <common/object.hpp>
 #include <common/exception.hpp>
 #include <common/error.hpp>
 #include <common/log.hpp>
 #include <platform/handle.hpp>
 
-/// The path of file to test the handle event
-#define HELLOWORLD_FILE_PATH "/tmp/helloworld"
-
-static event::TimerBase timerBase;
+static event::Loop loop;
 
 class TimerArg: public common::Object {
  public:
@@ -45,7 +41,7 @@ class MyTimerCb: public event::Callback<event::TimerEvent> {
         TimerArg *arg = dynamic_cast<TimerArg *>(e->getArg());
         log_info("%s(): count: %u", __func__, arg->count++);
         e->setTimeout(1000);
-        timerBase.addEvent(e, *this);
+        loop.TimerBus::addEvent(e, this);
     }
 };
 
@@ -57,13 +53,11 @@ int app_main(int argc, char *argv[]) {
         event::TimerEvent timerEvent(&timerArg);
 
         timerEvent.setTimeout(1000);
-        timerBase.addEvent(&timerEvent, timerCb);
+        loop.TimerBus::addEvent(&timerEvent, &timerCb);
 
         common::Log::setLevel(common::Log::LOG_INFO);
 
-        while (1) {
-            timerBase.dispatch(0);
-        }
+        loop.start();
     } catch (platform::HandleException e) {
         log_err("Handle: %s, Message: %s", e.what(), e.message());
     } catch (common::Exception e) {

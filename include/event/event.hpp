@@ -27,6 +27,11 @@
 #include <platform/handle.hpp>
 #include <platform/lock.hpp>
 
+/**
+ * @file event.hpp
+ * @brief Class Event
+*/
+
 namespace event {
 
 /**
@@ -35,12 +40,12 @@ namespace event {
 class Event {
  public:
 	/**
-	 * @brief Default constructor.
+	 * @brief Default constructor
 	*/
     Event(): pending(false) {}
 
     /**
-     * @brief Constructor with the argument of event.
+     * @brief Constructor with the argument of event
      * 
      * @arg is the argument of event
     */

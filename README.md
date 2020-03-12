@@ -42,9 +42,82 @@ make INSTALL_DIR=/ install
 ## Usage
 
 Note: See [helloworld.cpp](example/helloworld.cpp) to get more information.
+
+1. Contains the necessary header files and use namespace event
 ```
-#include <common/event.hpp>
-#include <common/base.hpp>
+#include <event/event.hpp>
+#include <event/bus.hpp>
+#include <event/callback.hpp>
+
+#include <queue>
+#include <iostream>
+#include <platform/lock.hpp>
+```
+2. Implement your own event, but need to inherit from Event
+```
+class MyEvent: public event::Event {
+ public:
+    MyEvent(const char *msg = nullptr): msg(msg) {}
+
+    const char *getMsg() const {
+        return msg;
+    }
+
+ private:
+    const char *msg;
+};
+```
+3. Implement your own event bus, but need to inherit from Bus
+```
+class MyBus: public event::Bus<MyEvent> {
+ public:
+    void addEvent(MyEvent *e, const event::Callback<MyEvent> *cb) override {
+        mutex.lock();
+        events.push(new EventState(e, cb));
+        mutex.unlock();
+    }
+
+    void delEvent(MyEvent *e) {}
+
+
+    int dispatch() {
+        mutex.lock();
+        EventState *s = events.front();
+        events.pop();
+        mutex.unlock();
+        s->cb->onEvent(s->e);
+        delete s;
+
+        return -1;
+    }
+ private:
+    class EventState {
+     public:
+        EventState(MyEvent *e, const event::Callback<MyEvent> *cb):
+            e(e), cb(cb) {}
+        MyEvent *e;
+        const event::Callback<MyEvent> *cb;
+    };
+    std::queue<EventState *> events;
+    platform::Lock mutex;
+};
+```
+4. Implement the callback of event
+```
+class MyEventCb: public event::Callback<MyEvent> {
+ public:
+    void onEvent(MyEvent *e) const override {
+        std::cout << "msg: " << e->getMsg() << std::endl;
+    }
+};
+```
+5. Trigger event
+```
+    MyEvent e("hello world");
+    MyBus bus;
+    MyEventCb cb;
+    bus.addEvent(&e, &cb);
+    bus.dispatch();
 ```
 
 ## License

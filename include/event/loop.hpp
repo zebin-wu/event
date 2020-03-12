@@ -21,33 +21,46 @@
 */
 #pragma once
 
-#include <type_traits>
-#include <event/callback.hpp>
-#include <common/exception.hpp>
+#include <event/handle_event.hpp>
+#include <event/timer_event.hpp>
 
 /**
- * @file base.hpp
- * @brief Event base class
+ * @file loop.hpp
+ * @brief Class Loop
 */
 
 namespace event {
 
-// Forward declare the Event class
-class Event;
-
-template <class T>
-class Base {
+/**
+ * @brief Event loop class, inherited from the bus base class
+*/
+class Loop: public HandleBus, public TimerBus {
  public:
-    Base() {
-        // An error here indicates you're trying to implement
-        // EventHandler with a type that is not derived from Event
-        static_assert(std::is_base_of<Event, T>::value,
-            "Base<T>: T must be a class derived from Event");
-    }
-    virtual ~Base() {}
-    virtual void addEvent(T *e, const Callback<T> &cb) = 0;
-    virtual void delEvent(T *e) = 0;
-    virtual int dispatch(int ms) = 0;
+	/**
+	 * @brief Default constructor
+	*/
+    Loop(): loop(false) {}
+
+
+    /**
+     * @brief Empty virtual destructor
+    */
+    virtual ~Loop() {}
+
+
+    /**
+     * @brief Start loop, exit loop when @c exit () is called
+    */
+    void start();
+
+
+    /**
+     * @brief Exit the loop
+    */
+    void exit();
+
+ private:
+    bool loop;
 };
 
 }  // namespace event
