@@ -20,10 +20,11 @@
  * SOFTWARE.
 */
 #include <event/handle_event.hpp>
+#include <common/object.hpp>
 
 namespace event {
 
-void HandleBase::addEvent(HandleEvent *e, const Callback<HandleEvent> &cb) {
+void HandleBus::addEvent(HandleEvent *e, const Callback<HandleEvent> &cb) {
     if (e->isPending()) {
         return;
     }
@@ -36,18 +37,19 @@ void HandleBase::addEvent(HandleEvent *e, const Callback<HandleEvent> &cb) {
         }, e);
 }
 
-void HandleBase::delEvent(HandleEvent *e) {
+void HandleBus::delEvent(HandleEvent *e) {
     if (!e->isPending()) {
         return;
     }
     poll.del(e->getHandle(), getEvent(e->getOperation()));
 }
 
-int HandleBase::dispatch(int ms) {
-    poll.polling(ms);
+int HandleBus::dispatch(int timeout) {
+    poll.polling(timeout);
+    return -1;
 }
 
-platform::Poll::Event HandleBase::getEvent(HandleEvent::Operation op) {
+platform::Poll::Event HandleBus::getEvent(HandleEvent::Operation op) {
     platform::Poll::Event e;
     switch (op) {
     case HandleEvent::OP_READ:

@@ -22,13 +22,12 @@
 #pragma once
 
 #include <event/event.hpp>
-#include <event/base.hpp>
-#include <common/object.hpp>
+#include <event/bus.hpp>
 #include <platform/poll.hpp>
 
 /**
- * @file TimerEvent.hpp
- * @brief Event base class
+ * @file handle_event.hpp
+ * @brief Handle event interfaces
 */
 
 namespace event {
@@ -56,8 +55,8 @@ class HandleEvent: public Event {
 
 
     /**
-     * @brief
-    */
+	 * @brief Empty virtual destructor
+	*/
     virtual ~HandleEvent() {}
 
 
@@ -128,13 +127,13 @@ class HandleEvent: public Event {
 
 typedef common::ObjectException<HandleEvent> HandleEventException;
 
-class HandleBase: public Base<HandleEvent> {
+class HandleBus: public Bus<HandleEvent> {
  public:
     void addEvent(HandleEvent *e, const Callback<HandleEvent> &cb) override;
 
     void delEvent(HandleEvent *e) override;
 
-    int dispatch(int ms) override;
+    int dispatch(int timeout) override;
 
  private:
     platform::Poll::Event getEvent(HandleEvent::Operation op);

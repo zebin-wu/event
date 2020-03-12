@@ -22,11 +22,12 @@
 #pragma once
 
 #include <type_traits>
+#include <event/callback.hpp>
 #include <common/exception.hpp>
 
 /**
- * @file callback.hpp
- * @brief Class Callback
+ * @file bus.hpp
+ * @brief Class Bus
 */
 
 namespace event {
@@ -35,32 +36,61 @@ namespace event {
 class Event;
 
 /**
- * @brief Base callback class, all callback inherit from this class
- */
+ * @brief Base bus class, all bus inherit from this class
+*/
 template <class T>
-class Callback {
+class Bus {
  public:
-    /**
-     * @brief Default constructor that enforces the template type
-     */
-    Callback() {
+	/**
+	 * @brief Default constructor that enforces the template type
+	*/
+    Bus() {
         // An error here indicates you're trying to implement
         // event with a type that is not derived from Event
         static_assert(std::is_base_of<Event, T>::value,
-            "Callback<T>: T must be a class derived from Event");
+            "Bus<T>: T must be a class derived from Event");
     }
 
-    /**
-     * @brief Empty virtual destructor
-    */
-    virtual ~Callback() {}
 
     /**
-     * @brief Pure virtual method for implementing the body of the listener
-     *
-     * @param e is the event instance
+	 * @brief Empty virtual destructor
+	*/
+    virtual ~Bus() {}
+
+
+    /**
+     * @brief Add the event to the bus
+     * 
+     * @param e Pointer to the event
+     * @param cb Callback reference
     */
-    virtual void onEvent(T *) const = 0;
+    virtual void addEvent(T *e, const Callback<T> &cb) = 0;
+
+
+    /**
+     * @brief Delete the event from the bus
+     * 
+     * @param e Pointer to the event
+    */
+    virtual void delEvent(T *e) = 0;
+
+
+    /**
+     * @brief Call the callback corresponding to the event when the event is triggered
+     * 
+     * @return Specifies the maximum wait time to return @c dispatch(), -1 if it do not need to wait
+    */
+    virtual int dispatch() { return -1; }
+
+
+    /**
+     * @brief Call the callback corresponding to the event when the event is triggered
+     * 
+     * @param ms Specifies the maximum wait time in milliseconds(-1 == infinite)
+     * 
+     * @return Specifies the maximum wait time to return @c dispatch(), -1 if it do not need to wait
+    */
+    virtual int dispatch(int timeout) { return timeout; }
 };
 
 }  // namespace event
