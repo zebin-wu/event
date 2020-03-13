@@ -36,9 +36,9 @@ namespace event {
 */
 class Loop: public HandleBus, public TimerBus {
  public:
-	/**
-	 * @brief Default constructor
-	*/
+    /**
+     * @brief Default constructor
+    */
     Loop(): loop(false) {}
 
 

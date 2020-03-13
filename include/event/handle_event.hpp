@@ -35,7 +35,7 @@ namespace event {
 class HandleEvent: public Event {
  public:
     /**
-     * @enum
+     * @enum The operation of the handle event
     */
     enum Operation{
         OP_READ,        ///< read
@@ -44,26 +44,26 @@ class HandleEvent: public Event {
     };
 
     /**
-     * @brief
+     * @brief Default constructor
      *
-     * @param handle
-     * @param op
+     * @param handle A point to the handle
+     * @param op The operation of the handle event
     */
     explicit HandleEvent(platform::Handle *handle,
-        Operation op, common::Object *arg = nullptr):
-        Event(arg), handle(handle), op(op) {}
+        Operation op):
+        handle(handle), op(op) {}
 
 
     /**
-	 * @brief Empty virtual destructor
-	*/
+     * @brief Empty virtual destructor
+    */
     virtual ~HandleEvent() {}
 
 
     /**
-     * @brief
+     * @brief Get the handle
      *
-     * @return
+     * @return the point of the handle
     */
     platform::Handle *getHandle() const {
         return handle;
@@ -71,9 +71,9 @@ class HandleEvent: public Event {
 
 
     /**
-     * @brief
+     * @brief Set the handle
      *
-     * @param handle
+     * @param handle A point to the handle
     */
     void setHandle(platform::Handle *handle) {
         this->handle = handle;
@@ -81,9 +81,9 @@ class HandleEvent: public Event {
 
 
     /**
-     * @brief
+     * @brief Get the operation
      *
-     * @return
+     * @return the operation
     */
     Operation getOperation() const {
         return op;
@@ -91,9 +91,19 @@ class HandleEvent: public Event {
 
 
     /**
-     * @brief
+     * @brief Set the operation
      *
-     * @return
+     * @param op is the operation of the event
+    */
+    void setOperation(Operation op) {
+        this->op = op;
+    }
+
+
+    /**
+     * @brief Get the callback of the event
+     *
+     * @return a point of the event
     */
     const Callback<HandleEvent> *getCb() const {
         return cb;
@@ -101,22 +111,12 @@ class HandleEvent: public Event {
 
 
     /**
-     * @brief
+     * @brief Set the callback of the event
      *
-     * @param cb
+     * @param cb is a const point of the event
     */
     void setCb(const Callback<HandleEvent> *cb) {
         this->cb = cb;
-    }
-
-
-    /**
-     * @brief
-     *
-     * @param op
-    */
-    void setOperation(Operation op) {
-        this->op = op;
     }
 
  private:
@@ -129,10 +129,25 @@ typedef common::ObjectException<HandleEvent> HandleEventException;
 
 class HandleBus: public Bus<HandleEvent> {
  public:
+    /**
+     * @brief Override to add a handle event to the handle bus 
+    */
     void addEvent(HandleEvent *e, const Callback<HandleEvent> *cb) override;
 
+
+    /**
+     * @brief Override to delete a handle event from the handle bus 
+    */
     void delEvent(HandleEvent *e) override;
 
+
+    /**
+     * @brief Override to trigger the event
+     *
+     * @param timeout Specifies the maximum wait time in milliseconds(-1 == infinite)
+     *
+     * @return Specifies the maximum wait time to return @c dispatch(), -1 if it do not need to wait
+    */
     int dispatch(int timeout) override;
 
  private:

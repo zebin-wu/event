@@ -35,7 +35,10 @@ namespace event {
 
 class TimerEvent: public Event {
  public:
-    explicit TimerEvent(common::Object *arg = nullptr): Event(arg), timeMs(0) {}
+    /**
+     * @brief Default constructor
+    */
+    TimerEvent(): timeMs(0) {}
 
     /**
      * @brief Empty virtual destructor
@@ -57,8 +60,8 @@ class TimerBus: public Bus<TimerEvent> {
     TimerBus(): timerHead(nullptr) {}
 
     /**
-	 * @brief Empty virtual destructor
-	*/
+     * @brief Empty virtual destructor
+    */
     ~TimerBus() override;
 
     void addEvent(TimerEvent *e, const Callback<TimerEvent> *cb) override;
