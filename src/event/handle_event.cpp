@@ -20,7 +20,6 @@
  * SOFTWARE.
 */
 #include <event/handle_event.hpp>
-#include <common/object.hpp>
 
 namespace event {
 

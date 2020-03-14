@@ -20,7 +20,6 @@
  * SOFTWARE.
 */
 #include <event/timer_event.hpp>
-#include <common/object.hpp>
 #include <common/exception.hpp>
 #include <common/assert.hpp>
 #include <common/log.hpp>
