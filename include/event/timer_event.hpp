@@ -33,6 +33,9 @@
 
 namespace event {
 
+/**
+ * @brief Trigger event after a delay
+*/
 class TimerEvent: public Event {
  public:
     /**
@@ -40,13 +43,26 @@ class TimerEvent: public Event {
     */
     TimerEvent(): timeMs(0) {}
 
+
     /**
      * @brief Empty virtual destructor
     */
     virtual ~TimerEvent() {}
 
+
+    /**
+     * @brief Set the timeout of the timer event
+     *
+     * @param ms is the time as the number of milliseconds
+    */
     void setTimeout(u32 ms);
 
+
+    /**
+     * @brief Get the timestamp when the event was triggered
+     * 
+     * @return the time as the number of milliseconds since 1970-01-01 00:00 (UTC).
+    */
     u64 getTimeMs() const;
 
  private:
@@ -57,17 +73,35 @@ typedef common::ObjectException<TimerEvent> TimerEventException;
 
 class TimerBus: public Bus<TimerEvent> {
  public:
+    /**
+     * @brief Default constructor
+    */
     TimerBus(): timerHead(nullptr) {}
+
 
     /**
      * @brief Empty virtual destructor
     */
     ~TimerBus() override;
 
+
+    /**
+     * @brief Override to add a timer event to the timer bus
+    */
     void addEvent(TimerEvent *e, const Callback<TimerEvent> *cb) override;
 
+
+    /**
+     * @brief Override to delete a timer event from the timer bus
+    */
     void delEvent(TimerEvent *e) override;
 
+
+    /**
+     * @brief Trigger timer event and return delay until next timer fires.
+     * 
+     * @return -1 if no timer events.
+    */
     int dispatch() override;
 
  private:
