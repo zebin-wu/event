@@ -64,6 +64,13 @@ INCLUDES += \
 	$(NULL)
 
 #
+# Global macro definition
+#
+DEFINES += \
+	DEBUG\
+	$(NULL)
+
+#
 # Source file of libevent
 #
 SOURCES_LIBEVENT := \
@@ -89,6 +96,7 @@ SOURCES += \
 # Compile command line switch of CPP
 #
 CPPFLAGS += $(addprefix -I, $(INCLUDES))
+CPPFLAGS += $(addprefix -D, $(DEFINES))
 
 #
 # Rule to build all

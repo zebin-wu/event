@@ -20,7 +20,6 @@
  * SOFTWARE.
 */
 #include <event/loop.hpp>
-#include <common/object.hpp>
 #include <common/exception.hpp>
 #include <common/error.hpp>
 #include <common/log.hpp>

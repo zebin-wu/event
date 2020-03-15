@@ -21,7 +21,6 @@
 */
 #pragma once
 
-#include <common/object.hpp>
 #include <common/exception.hpp>
 #include <platform/type.hpp>
 #include <platform/handle.hpp>

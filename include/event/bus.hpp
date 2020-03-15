@@ -61,8 +61,8 @@ class Bus {
     /**
      * @brief Add the event to the bus
      * 
-     * @param e Pointer to the event
-     * @param cb Callback reference
+     * @param e is a pointer to the event
+     * @param cb is the reference of the callback
     */
     virtual void addEvent(T *e, const Callback<T> *cb) = 0;
 
@@ -70,7 +70,7 @@ class Bus {
     /**
      * @brief Delete the event from the bus
      * 
-     * @param e Pointer to the event
+     * @param e is a pointer to the event
     */
     virtual void delEvent(T *e) = 0;
 

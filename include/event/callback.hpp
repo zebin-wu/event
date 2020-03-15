@@ -56,7 +56,7 @@ class Callback {
     virtual ~Callback() {}
 
     /**
-     * @brief Pure virtual method for implementing the body of the listener
+     * @brief Pure virtual method for implementing the body of the callback
      *
      * @param e is the event instance
     */
